@@ -1,0 +1,20 @@
+{
+  "name": "campus-skill-exchange",
+  "version": "1.0.0",
+  "description": "Campus Skill Exchange Platform - Peer-to-Peer Student Knowledge Sharing",
+  "scripts": {
+    "install:server": "cd server && npm install",
+    "install:client": "cd client && npm install",
+    "install:all": "npm run install:server && npm run install:client",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "seed": "cd server && npm run seed",
+    "build:client": "cd client && npm run build",
+    "build": "npm run install:all && npm run build:client",
+    "start": "cd server && npm start"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
