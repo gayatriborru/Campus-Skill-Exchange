@@ -36,6 +36,11 @@ const errorHandler = (err, req, res, next) => {
     message = 'Authentication token expired, please log in again.';
   }
 
+  if (err.message && (err.message.includes('buffering timed out') || err.message.includes('ECONNREFUSED'))) {
+    statusCode = 503;
+    message = 'Database is currently unreachable. Please ensure MONGODB_URI is configured in Render Environment Variables and IP 0.0.0.0/0 is allowed in MongoDB Atlas Network Access.';
+  }
+
   res.status(statusCode).json({
     success: false,
     message,

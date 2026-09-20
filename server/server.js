@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const dotenv = require('dotenv');
+const mongoose = require('mongoose');
 const { Server } = require('socket.io');
 const path = require('path');
 const fs = require('fs');
@@ -77,9 +78,12 @@ app.set('io', io);
 
 // Health Check Endpoint (for Render / uptime monitors)
 app.get('/api/health', (req, res) => {
+  const isConnected = mongoose.connection.readyState === 1;
   res.status(200).json({
     status: 'online',
     platform: 'Campus Skill Exchange API',
+    database: isConnected ? 'connected' : 'disconnected',
+    mongoReadyState: mongoose.connection.readyState,
     environment: process.env.NODE_ENV || 'development',
     timestamp: new Date().toISOString(),
   });
