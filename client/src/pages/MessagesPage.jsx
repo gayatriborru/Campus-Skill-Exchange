@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { chatService } from '../services/chatService';
 import { userService } from '../services/userService';
 import { useAuth } from '../context/AuthContext';
@@ -192,7 +193,12 @@ const MessagesPage = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden h-[calc(100vh-140px)] flex flex-col md:flex-row">
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35 }}
+        className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden h-[calc(100vh-140px)] flex flex-col md:flex-row"
+      >
         {/* Left Sidebar: Conversations list */}
         <div className="w-full md:w-80 lg:w-96 border-r border-slate-200 flex flex-col bg-slate-50/50">
           <div className="p-4 border-b border-slate-200 bg-white">
@@ -215,11 +221,12 @@ const MessagesPage = () => {
                 const online = isUserOnline(convo.user._id);
 
                 return (
-                  <button
+                  <motion.button
                     key={convo.user._id}
+                    whileHover={{ x: 2 }}
                     type="button"
                     onClick={() => setActiveRecipient(convo.user)}
-                    className={`w-full text-left p-4 flex items-start gap-3 transition-colors hover:bg-slate-100/60 ${
+                    className={`btn-press w-full text-left p-4 flex items-start gap-3 transition-colors hover:bg-slate-100/60 cursor-pointer ${
                       isSelected ? 'bg-brand-50/70 border-l-4 border-brand-600' : 'bg-transparent'
                     }`}
                   >
@@ -235,7 +242,7 @@ const MessagesPage = () => {
                         className="w-11 h-11 rounded-full object-cover border border-slate-200"
                       />
                       {online && (
-                        <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white" />
+                        <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white ring-2 ring-white" />
                       )}
                     </div>
 
@@ -260,11 +267,11 @@ const MessagesPage = () => {
                     </div>
 
                     {convo.unreadCount > 0 && (
-                      <span className="flex-shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-brand-600 text-white">
+                      <span className="flex-shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-brand-600 text-white animate-pulse">
                         {convo.unreadCount}
                       </span>
                     )}
-                  </button>
+                  </motion.button>
                 );
               })
             )}
@@ -276,7 +283,11 @@ const MessagesPage = () => {
           {activeRecipient ? (
             <>
               {/* Chat Header */}
-              <div className="p-4 border-b border-slate-200 flex items-center justify-between gap-3 bg-white">
+              <motion.div
+                initial={{ opacity: 0, y: -5 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-4 border-b border-slate-200 flex items-center justify-between gap-3 bg-white"
+              >
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="relative">
                     <img
@@ -290,7 +301,7 @@ const MessagesPage = () => {
                       className="w-10 h-10 rounded-full object-cover border border-slate-200"
                     />
                     {isUserOnline(activeRecipient._id) && (
-                      <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white" />
+                      <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white ring-1 ring-white" />
                     )}
                   </div>
 
@@ -311,25 +322,29 @@ const MessagesPage = () => {
 
                 {/* Header action buttons */}
                 <div className="flex items-center gap-2">
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.04 }}
+                    whileTap={{ scale: 0.96 }}
                     type="button"
                     onClick={() => setBookingModalOpen(true)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-brand-50 hover:bg-brand-100 text-brand-700 text-xs font-bold border border-brand-200 transition-colors"
+                    className="btn-press inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-brand-50 hover:bg-brand-100 text-brand-700 text-xs font-bold border border-brand-200 transition-colors"
                   >
                     <Calendar className="w-3.5 h-3.5" />
                     <span className="hidden sm:inline">Schedule Session</span>
-                  </button>
+                  </motion.button>
 
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.06 }}
+                    whileTap={{ scale: 0.94 }}
                     type="button"
                     onClick={() => setReportModalOpen(true)}
-                    className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors"
+                    className="btn-press p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors"
                     title="Report Safety Issue"
                   >
                     <ShieldAlert className="w-4 h-4" />
-                  </button>
+                  </motion.button>
                 </div>
-              </div>
+              </motion.div>
 
               {/* Messages Feed */}
               <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/40">
@@ -344,8 +359,11 @@ const MessagesPage = () => {
                     const isMe = msg.sender?._id === user?._id || msg.sender === user?._id;
 
                     return (
-                      <div
+                      <motion.div
                         key={msg._id || i}
+                        initial={{ opacity: 0, scale: 0.94, y: 8 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        transition={{ duration: 0.2 }}
                         className={`flex items-end gap-2 ${isMe ? 'justify-end' : 'justify-start'}`}
                       >
                         {!isMe && (
@@ -362,7 +380,7 @@ const MessagesPage = () => {
                         )}
 
                         <div
-                          className={`max-w-md rounded-2xl px-4 py-2.5 text-xs shadow-xs leading-relaxed ${
+                          className={`max-w-md rounded-2xl px-4 py-2.5 text-xs shadow-xs leading-relaxed transition-shadow hover:shadow-sm ${
                             isMe
                               ? 'bg-brand-600 text-white rounded-br-none'
                               : 'bg-white text-slate-800 border border-slate-200/80 rounded-bl-none'
@@ -380,16 +398,25 @@ const MessagesPage = () => {
                             })}
                           </span>
                         </div>
-                      </div>
+                      </motion.div>
                     );
                   })
                 )}
 
                 {isPeerTyping && (
-                  <div className="flex items-center gap-2 text-xs text-slate-400 italic py-1">
-                    <span className="w-2 h-2 rounded-full bg-slate-400 animate-bounce" />
+                  <motion.div
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    className="flex items-center gap-2 text-xs text-slate-400 italic py-1"
+                  >
+                    <div className="flex gap-1 items-center">
+                      <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-bounce" style={{ animationDelay: '300ms' }} />
+                    </div>
                     <span>{activeRecipient.name} is typing...</span>
-                  </div>
+                  </motion.div>
                 )}
                 <div ref={messagesEndRef} />
               </div>
@@ -404,29 +431,36 @@ const MessagesPage = () => {
                   value={inputText}
                   onChange={handleInputChange}
                   placeholder={`Message ${activeRecipient.name}...`}
-                  className="flex-1 px-4 py-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-slate-50 focus:bg-white transition-colors"
+                  className="flex-1 px-4 py-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-slate-50 focus:bg-white transition-all duration-200"
                 />
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   type="submit"
                   disabled={!inputText.trim()}
-                  className="p-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white disabled:opacity-40 transition-all shadow-xs cursor-pointer"
+                  className="btn-press p-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white disabled:opacity-40 transition-all shadow-xs cursor-pointer"
                   aria-label="Send message"
                 >
                   <Send className="w-4 h-4" />
-                </button>
+                </motion.button>
               </form>
             </>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-slate-400">
-              <MessageSquare className="w-12 h-12 text-slate-300 mb-3" />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3 }}
+              className="flex-1 flex flex-col items-center justify-center p-8 text-center text-slate-400"
+            >
+              <MessageSquare className="w-12 h-12 text-slate-300 mb-3 animate-pulse" />
               <h3 className="text-base font-bold text-slate-700">Select a conversation</h3>
               <p className="text-xs text-slate-400 mt-1 max-w-sm">
                 Choose a peer from the list on the left to start collaborating and exchanging skills.
               </p>
-            </div>
+            </motion.div>
           )}
         </div>
-      </div>
+      </motion.div>
 
       {/* Booking Modal */}
       {activeRecipient && (

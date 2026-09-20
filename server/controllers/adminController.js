@@ -150,6 +150,11 @@ const toggleStudentSuspension = async (req, res, next) => {
     student.isBlocked = !student.isBlocked;
     await student.save();
 
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('stats:updated');
+    }
+
     return res.status(200).json({
       success: true,
       message: `Student account ${student.isBlocked ? 'suspended' : 'activated'} successfully.`,
@@ -198,6 +203,11 @@ const updateReportStatus = async (req, res, next) => {
     }
 
     await report.save();
+
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('stats:updated');
+    }
 
     return res.status(200).json({
       success: true,

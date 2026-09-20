@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { sessionService } from '../services/sessionService';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -56,6 +57,17 @@ const SessionsPage = () => {
     fetchSessions();
   }, []);
 
+  // Real-time listener: update sessions list whenever a session is requested, accepted, or concluded
+  useEffect(() => {
+    const handleSessionUpdated = () => {
+      fetchSessions();
+    };
+    window.addEventListener('campus:session:updated', handleSessionUpdated);
+    return () => {
+      window.removeEventListener('campus:session:updated', handleSessionUpdated);
+    };
+  }, []);
+
   const handleUpdateStatus = async (sessionId, status) => {
     try {
       await sessionService.updateSession(sessionId, { status });
@@ -94,7 +106,12 @@ const SessionsPage = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <motion.div
+        initial={{ opacity: 0, y: -15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35 }}
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+      >
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
             Exchange Sessions & Schedule
@@ -104,15 +121,17 @@ const SessionsPage = () => {
           </p>
         </div>
 
-        <button
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
           type="button"
           onClick={() => setNewBookingModalOpen(true)}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold shadow-md shadow-brand-600/20 transition-all self-start sm:self-auto cursor-pointer"
+          className="btn-press inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold shadow-md shadow-brand-600/20 transition-all self-start sm:self-auto cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           <span>Book New Session</span>
-        </button>
-      </div>
+        </motion.button>
+      </motion.div>
 
       {error && (
         <div className="flex items-center justify-between gap-2 p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs">
@@ -131,7 +150,12 @@ const SessionsPage = () => {
       )}
 
       {/* Tabs & Role Selector */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-3 rounded-2xl border border-slate-200 shadow-xs">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.05 }}
+        className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-3 rounded-2xl border border-slate-200 shadow-xs"
+      >
         {/* Status Filter Tabs */}
         <div className="flex items-center gap-1 overflow-x-auto w-full sm:w-auto">
           {[
@@ -140,67 +164,76 @@ const SessionsPage = () => {
             { id: 'completed', label: 'Completed' },
             { id: 'all', label: 'All Sessions' },
           ].map((tab) => (
-            <button
+            <motion.button
               key={tab.id}
+              whileTap={{ scale: 0.96 }}
               type="button"
               onClick={() => setActiveFilter(tab.id)}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+              className={`btn-press px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
                 activeFilter === tab.id
                   ? 'bg-slate-900 text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
               {tab.label}
-            </button>
+            </motion.button>
           ))}
         </div>
 
         {/* Role Toggle */}
         <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl self-end sm:self-auto">
-          <button
+          <motion.button
+            whileTap={{ scale: 0.96 }}
             type="button"
             onClick={() => setRoleFilter('all')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+            className={`btn-press px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
               roleFilter === 'all' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500'
             }`}
           >
             All Roles
-          </button>
-          <button
+          </motion.button>
+          <motion.button
+            whileTap={{ scale: 0.96 }}
             type="button"
             onClick={() => setRoleFilter('teaching')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+            className={`btn-press px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
               roleFilter === 'teaching' ? 'bg-white text-emerald-700 shadow-xs' : 'text-slate-500'
             }`}
           >
             Teaching
-          </button>
-          <button
+          </motion.button>
+          <motion.button
+            whileTap={{ scale: 0.96 }}
             type="button"
             onClick={() => setRoleFilter('learning')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+            className={`btn-press px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
               roleFilter === 'learning' ? 'bg-white text-brand-700 shadow-xs' : 'text-slate-500'
             }`}
           >
             Learning
-          </button>
+          </motion.button>
         </div>
-      </div>
+      </motion.div>
 
       {/* Sessions Content */}
       {loading ? (
         <LoadingSpinner text="Retrieving sessions..." />
       ) : filteredSessions.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-3xl border border-slate-200 p-8">
-          <Calendar className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3 }}
+          className="text-center py-16 bg-white rounded-3xl border border-slate-200 p-8"
+        >
+          <Calendar className="w-12 h-12 text-slate-300 mx-auto mb-3 animate-pulse" />
           <h3 className="text-base font-bold text-slate-800">No sessions in this view</h3>
           <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
             Ready to exchange skills? Propose a session from the Explore page or Smart Matchmaker!
           </p>
-        </div>
+        </motion.div>
       ) : (
         <div className="space-y-4">
-          {filteredSessions.map((session) => {
+          {filteredSessions.map((session, index) => {
             const isTeacher = session.teacher?._id === user?._id;
             const peer = isTeacher ? session.learner : session.teacher;
             const isPendingTeacher = isTeacher && session.status === 'Pending';
@@ -215,9 +248,12 @@ const SessionsPage = () => {
             });
 
             return (
-              <div
+              <motion.div
                 key={session._id}
-                className="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-all p-5 flex flex-col md:flex-row md:items-center justify-between gap-6"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.04 }}
+                className="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-all p-5 flex flex-col md:flex-row md:items-center justify-between gap-6 card-hover-lift"
               >
                 {/* Left Col: Peer info & Topic */}
                 <div className="flex items-start gap-4 flex-1">
@@ -229,7 +265,7 @@ const SessionsPage = () => {
                       )}`
                     }
                     alt={peer?.name}
-                    className="w-13 h-13 rounded-2xl object-cover border border-slate-200 flex-shrink-0"
+                    className="w-13 h-13 rounded-2xl object-cover border border-slate-200 flex-shrink-0 transition-transform hover:scale-105 duration-200"
                   />
 
                   <div className="min-w-0 space-y-1">
@@ -309,55 +345,65 @@ const SessionsPage = () => {
                   {/* Pending actions for Teacher */}
                   {isPendingTeacher && (
                     <>
-                      <button
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                         type="button"
                         onClick={() => handleUpdateStatus(session._id, 'Accepted')}
-                        className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition-colors"
+                        className="btn-press px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition-colors"
                       >
                         Accept
-                      </button>
-                      <button
+                      </motion.button>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                         type="button"
                         onClick={() => handleUpdateStatus(session._id, 'Cancelled')}
-                        className="px-4 py-2 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-semibold transition-colors"
+                        className="btn-press px-4 py-2 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-semibold transition-colors"
                       >
                         Decline
-                      </button>
+                      </motion.button>
                     </>
                   )}
 
                   {/* Scheduled Actions */}
                   {isScheduled && (
                     <>
-                      <a
+                      <motion.a
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}
                         href={session.meetingLink || 'https://meet.google.com/new'}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold shadow-xs transition-colors inline-flex items-center gap-1.5"
+                        className="btn-press px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold shadow-xs transition-colors inline-flex items-center gap-1.5"
                       >
                         <Video className="w-4 h-4" />
                         Join Call
-                      </a>
-                      <button
+                      </motion.a>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                         type="button"
                         onClick={() => handleUpdateStatus(session._id, 'Completed')}
-                        className="px-3.5 py-2 rounded-xl border border-emerald-200 text-emerald-700 hover:bg-emerald-50 text-xs font-semibold transition-colors"
+                        className="btn-press px-3.5 py-2 rounded-xl border border-emerald-200 text-emerald-700 hover:bg-emerald-50 text-xs font-semibold transition-colors"
                       >
                         Mark Complete
-                      </button>
+                      </motion.button>
                     </>
                   )}
 
                   {/* Completed & Rate Action (for Learner) */}
                   {isCompleted && !isTeacher && !session.rated && (
-                    <button
+                    <motion.button
+                      whileHover={{ scale: 1.04 }}
+                      whileTap={{ scale: 0.96 }}
                       type="button"
                       onClick={() => handleOpenReview(session)}
-                      className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow-xs transition-colors inline-flex items-center gap-1.5"
+                      className="btn-press px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow-xs transition-colors inline-flex items-center gap-1.5"
                     >
                       <Award className="w-4 h-4" />
                       Rate & Review (+10 pts)
-                    </button>
+                    </motion.button>
                   )}
 
                   {isCompleted && session.rated && (
@@ -368,16 +414,18 @@ const SessionsPage = () => {
                   )}
 
                   {/* Chat with peer */}
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.08 }}
+                    whileTap={{ scale: 0.92 }}
                     type="button"
                     onClick={() => navigate(`/messages?recipient=${peer?._id}`)}
-                    className="p-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 transition-colors"
+                    className="btn-press p-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 transition-colors"
                     title="Message Peer"
                   >
                     <MessageSquare className="w-4 h-4" />
-                  </button>
+                  </motion.button>
                 </div>
-              </div>
+              </motion.div>
             );
           })}
         </div>

@@ -50,7 +50,7 @@ const StarRating = ({
       </div>
 
       {showValue && (
-        <span className="text-xs font-semibold text-slate-700 ml-0.5">
+        <span className="text-xs font-semibold text-slate-300 ml-0.5">
           {Number(rating).toFixed(1)}
         </span>
       )}

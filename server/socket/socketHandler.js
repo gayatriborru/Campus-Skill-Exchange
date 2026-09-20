@@ -4,7 +4,19 @@ const Notification = require('../models/Notification');
 // Map active user IDs to socket IDs: { userId: Set([socketId1, socketId2]) }
 const onlineUsers = new Map();
 
+const emitToUser = (io, userId, event, data) => {
+  if (!io || !userId) return;
+  const userSockets = onlineUsers.get(userId.toString());
+  if (userSockets && userSockets.size > 0) {
+    userSockets.forEach((sockId) => {
+      io.to(sockId).emit(event, data);
+    });
+  }
+};
+
 const initializeSocket = (io) => {
+  io.emitToUser = (userId, event, data) => emitToUser(io, userId, event, data);
+
   io.on('connection', (socket) => {
     // 1. User joins online pool
     socket.on('user:join', (userId) => {
@@ -96,4 +108,4 @@ const initializeSocket = (io) => {
   });
 };
 
-module.exports = { initializeSocket };
+module.exports = { initializeSocket, emitToUser };

@@ -14,8 +14,8 @@ const getUsers = async (req, res, next) => {
       role: 'student',
     };
 
-    // Exclude current user from discover search if logged in
-    if (req.user) {
+    // Only exclude current user if explicitly requested (e.g. for matching)
+    if (req.query.excludeSelf === 'true' && req.user) {
       query._id = { $ne: req.user._id };
       if (req.user.blockedUsers?.length) {
         query._id = { $nin: [req.user._id, ...req.user.blockedUsers] };
@@ -59,7 +59,8 @@ const getUsers = async (req, res, next) => {
     if (sortBy === 'points') sortOption = { skillPoints: -1 };
     if (sortBy === 'newest') sortOption = { createdAt: -1 };
 
-    const students = await User.find(query).sort(sortOption).limit(50);
+    // Explicitly exclude passwords for security
+    const students = await User.find(query).select('-password').sort(sortOption).limit(50);
 
     // Populate skills for each student
     const studentList = await Promise.all(
@@ -78,6 +79,7 @@ const getUsers = async (req, res, next) => {
     return res.status(200).json({
       success: true,
       count: studentList.length,
+      users: studentList,
       students: studentList,
     });
   } catch (error) {

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { userService } from '../services/userService';
@@ -183,10 +184,16 @@ const ProfilePage = () => {
         </div>
       )}
       {/* Profile Header Card */}
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden card-hover-lift"
+      >
         {/* Banner background */}
-        <div className="h-36 sm:h-44 bg-gradient-to-r from-brand-600 via-indigo-600 to-purple-600 relative">
+        <div className="h-36 sm:h-44 bg-gradient-to-r from-brand-600 via-indigo-600 to-purple-600 relative overflow-hidden">
           <div className="absolute inset-0 bg-black/10" />
+          <div className="absolute -top-12 -right-12 w-64 h-64 rounded-full bg-white/10 blur-2xl pointer-events-none" />
         </div>
 
         {/* Info row */}
@@ -194,7 +201,10 @@ const ProfilePage = () => {
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 -mt-16 sm:-mt-20 mb-6">
             {/* Avatar & Title */}
             <div className="flex items-end gap-4">
-              <img
+              <motion.img
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.4, delay: 0.1 }}
                 src={
                   profile.profileImage ||
                   `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(
@@ -202,7 +212,7 @@ const ProfilePage = () => {
                   )}`
                 }
                 alt={profile.name}
-                className="w-28 h-28 sm:w-36 sm:h-36 rounded-3xl object-cover border-4 border-white shadow-xl bg-white"
+                className="w-28 h-28 sm:w-36 sm:h-36 rounded-3xl object-cover border-4 border-white shadow-xl bg-white transition-transform hover:scale-105 duration-300"
               />
               <div className="mb-2">
                 <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-tight">
@@ -217,40 +227,48 @@ const ProfilePage = () => {
             {/* Header Action Buttons */}
             <div className="flex items-center gap-2 mb-2">
               {isOwnProfile ? (
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   type="button"
                   onClick={() => setIsEditing(!isEditing)}
-                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-xs transition-colors"
+                  className="btn-press inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-xs transition-colors"
                 >
                   <Edit3 className="w-4 h-4" />
                   <span>{isEditing ? 'Close Editing' : 'Edit Profile'}</span>
-                </button>
+                </motion.button>
               ) : (
                 <>
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
                     type="button"
                     onClick={() => setBookingModalOpen(true)}
-                    className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold shadow-md shadow-brand-600/20 transition-all"
+                    className="btn-press inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold shadow-md shadow-brand-600/20 transition-all"
                   >
                     <Calendar className="w-4 h-4" />
                     <span>Request Session</span>
-                  </button>
-                  <button
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     type="button"
                     onClick={() => navigate(`/messages?recipient=${profile._id}`)}
-                    className="p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 transition-colors"
+                    className="btn-press p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 transition-colors"
                     title="Direct Message"
                   >
                     <MessageSquare className="w-4 h-4" />
-                  </button>
-                  <button
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     type="button"
                     onClick={() => setReportModalOpen(true)}
-                    className="p-2.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors"
+                    className="btn-press p-2.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors"
                     title="Report Safety Issue"
                   >
                     <ShieldAlert className="w-4 h-4" />
-                  </button>
+                  </motion.button>
                 </>
               )}
             </div>
@@ -258,7 +276,7 @@ const ProfilePage = () => {
 
           {/* Quick Stats Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100 mb-6">
-            <div className="text-center">
+            <div className="text-center transition-transform hover:-translate-y-0.5 duration-200">
               <span className="text-lg sm:text-xl font-bold text-slate-900 block">
                 ★ {profile.ratingsCount > 0 ? Number(profile.averageRating || 0).toFixed(1) : '0.0'}
               </span>
@@ -266,20 +284,20 @@ const ProfilePage = () => {
                 {profile.ratingsCount || 0} Peer Reviews
               </span>
             </div>
-            <div className="text-center border-l border-slate-200/80">
+            <div className="text-center border-l border-slate-200/80 transition-transform hover:-translate-y-0.5 duration-200">
               <span className="text-lg sm:text-xl font-bold text-brand-600 block">
                 {profile.completedSessionsCount || 0}
               </span>
               <span className="text-[11px] text-slate-500 font-medium">Sessions Exchanged</span>
             </div>
-            <div className="text-center border-l border-slate-200/80">
+            <div className="text-center border-l border-slate-200/80 transition-transform hover:-translate-y-0.5 duration-200">
               <span className="text-lg sm:text-xl font-bold text-emerald-600 block flex items-center justify-center gap-1">
                 <Coins className="w-4 h-4 text-emerald-500" />
                 {profile.skillPoints || 0}
               </span>
               <span className="text-[11px] text-slate-500 font-medium">Skill Points</span>
             </div>
-            <div className="text-center border-l border-slate-200/80">
+            <div className="text-center border-l border-slate-200/80 transition-transform hover:-translate-y-0.5 duration-200">
               <span className="text-lg sm:text-xl font-bold text-indigo-600 block">
                 {profile.availability || 'Flexible'}
               </span>
@@ -288,97 +306,103 @@ const ProfilePage = () => {
           </div>
 
           {/* Edit Form Drawer */}
-          {isEditing && (
-            <form
-              onSubmit={handleSaveProfile}
-              className="p-5 bg-white border border-brand-200 rounded-2xl mb-6 space-y-4 shadow-sm animate-in fade-in duration-150"
-            >
-              <h3 className="text-sm font-bold text-slate-900">Update Profile Information</h3>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                  Bio / Learning Goals
-                </label>
-                <textarea
-                  rows={3}
-                  value={editBio}
-                  onChange={(e) => setEditBio(e.target.value)}
-                  className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                    Department
-                  </label>
-                  <select
-                    value={editDept}
-                    onChange={(e) => setEditDept(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 bg-white"
-                  >
-                    <option value="Computer Science & Engineering">Computer Science & Engineering</option>
-                    <option value="Information Technology">Information Technology</option>
-                    <option value="Electronics & Communication">Electronics & Communication</option>
-                    <option value="Data Science & AI">Data Science & AI</option>
-                    <option value="Design & Media">Design & Media</option>
-                    <option value="Business Administration">Business Administration</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
+          <AnimatePresence>
+            {isEditing && (
+              <motion.form
+                initial={{ opacity: 0, y: -10, height: 0 }}
+                animate={{ opacity: 1, y: 0, height: 'auto' }}
+                exit={{ opacity: 0, y: -10, height: 0 }}
+                transition={{ duration: 0.25 }}
+                onSubmit={handleSaveProfile}
+                className="overflow-hidden p-5 bg-white border border-brand-200 rounded-2xl mb-6 space-y-4 shadow-sm"
+              >
+                <h3 className="text-sm font-bold text-slate-900">Update Profile Information</h3>
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                    College Year
+                    Bio / Learning Goals
                   </label>
-                  <select
-                    value={editYear}
-                    onChange={(e) => setEditYear(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 bg-white"
-                  >
-                    <option value="1st Year">1st Year</option>
-                    <option value="2nd Year">2nd Year</option>
-                    <option value="3rd Year">3rd Year</option>
-                    <option value="4th Year">4th Year</option>
-                    <option value="Postgraduate">Postgraduate</option>
-                  </select>
+                  <textarea
+                    rows={3}
+                    value={editBio}
+                    onChange={(e) => setEditBio(e.target.value)}
+                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500"
+                  />
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                    Availability
-                  </label>
-                  <select
-                    value={editAvailability}
-                    onChange={(e) => setEditAvailability(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 bg-white"
-                  >
-                    <option value="Flexible">Flexible</option>
-                    <option value="Weekdays">Weekdays</option>
-                    <option value="Weekends">Weekends</option>
-                    <option value="Evenings">Evenings</option>
-                  </select>
-                </div>
-              </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                      Department
+                    </label>
+                    <select
+                      value={editDept}
+                      onChange={(e) => setEditDept(e.target.value)}
+                      className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 bg-white"
+                    >
+                      <option value="Computer Science & Engineering">Computer Science & Engineering</option>
+                      <option value="Information Technology">Information Technology</option>
+                      <option value="Electronics & Communication">Electronics & Communication</option>
+                      <option value="Data Science & AI">Data Science & AI</option>
+                      <option value="Design & Media">Design & Media</option>
+                      <option value="Business Administration">Business Administration</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
 
-              <div className="flex justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setIsEditing(false)}
-                  className="px-4 py-2 text-xs text-slate-600 hover:text-slate-800"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={savingProfile}
-                  className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl shadow-xs"
-                >
-                  {savingProfile ? 'Saving...' : 'Save Changes'}
-                </button>
-              </div>
-            </form>
-          )}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                      College Year
+                    </label>
+                    <select
+                      value={editYear}
+                      onChange={(e) => setEditYear(e.target.value)}
+                      className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 bg-white"
+                    >
+                      <option value="1st Year">1st Year</option>
+                      <option value="2nd Year">2nd Year</option>
+                      <option value="3rd Year">3rd Year</option>
+                      <option value="4th Year">4th Year</option>
+                      <option value="Postgraduate">Postgraduate</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                      Availability
+                    </label>
+                    <select
+                      value={editAvailability}
+                      onChange={(e) => setEditAvailability(e.target.value)}
+                      className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 bg-white"
+                    >
+                      <option value="Flexible">Flexible</option>
+                      <option value="Weekdays">Weekdays</option>
+                      <option value="Weekends">Weekends</option>
+                      <option value="Evenings">Evenings</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsEditing(false)}
+                    className="px-4 py-2 text-xs text-slate-600 hover:text-slate-800"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={savingProfile}
+                    className="btn-press px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl shadow-xs"
+                  >
+                    {savingProfile ? 'Saving...' : 'Save Changes'}
+                  </button>
+                </div>
+              </motion.form>
+            )}
+          </AnimatePresence>
 
           {/* Bio text */}
           {!isEditing && (
@@ -387,12 +411,17 @@ const ProfilePage = () => {
             </p>
           )}
         </div>
-      </div>
+      </motion.div>
 
       {/* Skills Matrix: Teach vs Learn */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Skills I Can Teach */}
-        <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-xs space-y-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.1 }}
+          className="bg-white p-6 rounded-3xl border border-slate-200 shadow-xs space-y-4 card-hover-lift"
+        >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
@@ -403,14 +432,16 @@ const ProfilePage = () => {
               </h3>
             </div>
             {isOwnProfile && (
-              <button
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 type="button"
                 onClick={() => openAddSkill('teach')}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold border border-emerald-200 transition-colors"
+                className="btn-press inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold border border-emerald-200 transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" />
                 Add Skill
-              </button>
+              </motion.button>
             )}
           </div>
 
@@ -429,10 +460,15 @@ const ProfilePage = () => {
               ))
             )}
           </div>
-        </div>
+        </motion.div>
 
         {/* Skills I Want to Learn */}
-        <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-xs space-y-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.15 }}
+          className="bg-white p-6 rounded-3xl border border-slate-200 shadow-xs space-y-4 card-hover-lift"
+        >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center">
@@ -443,14 +479,16 @@ const ProfilePage = () => {
               </h3>
             </div>
             {isOwnProfile && (
-              <button
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 type="button"
                 onClick={() => openAddSkill('learn')}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-brand-50 hover:bg-brand-100 text-brand-800 text-xs font-bold border border-brand-200 transition-colors"
+                className="btn-press inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-brand-50 hover:bg-brand-100 text-brand-800 text-xs font-bold border border-brand-200 transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" />
                 Add Goal
-              </button>
+              </motion.button>
             )}
           </div>
 
@@ -469,11 +507,16 @@ const ProfilePage = () => {
               ))
             )}
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Gamification Badges Shelf */}
-      <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, delay: 0.2 }}
+        className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-4"
+      >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
@@ -495,12 +538,16 @@ const ProfilePage = () => {
           </p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
-            {badges.map((badge) => (
-              <div
+            {badges.map((badge, idx) => (
+              <motion.div
                 key={badge._id}
-                className="flex items-start gap-3.5 p-4 rounded-2xl bg-gradient-to-r from-amber-50/40 via-white to-slate-50 border border-amber-200/80 shadow-xs"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.25, delay: idx * 0.05 }}
+                whileHover={{ y: -3 }}
+                className="flex items-start gap-3.5 p-4 rounded-2xl bg-gradient-to-r from-amber-50/40 via-white to-slate-50 border border-amber-200/80 shadow-xs card-hover-lift cursor-default"
               >
-                <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
                   <Award className="w-5 h-5" />
                 </div>
                 <div>
@@ -509,14 +556,19 @@ const ProfilePage = () => {
                     {badge.description}
                   </p>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         )}
-      </div>
+      </motion.div>
 
       {/* Reviews & Testimonials */}
-      <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, delay: 0.25 }}
+        className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-4"
+      >
         <h3 className="text-base font-bold text-slate-900">
           Reviews from Students ({reviews.length})
         </h3>
@@ -525,10 +577,13 @@ const ProfilePage = () => {
           <p className="text-xs text-slate-400 italic py-4">No reviews recorded yet.</p>
         ) : (
           <div className="space-y-4 pt-2">
-            {reviews.map((rev) => (
-              <div
+            {reviews.map((rev, idx) => (
+              <motion.div
                 key={rev._id}
-                className="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-2"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2, delay: idx * 0.04 }}
+                className="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-2 card-hover-lift"
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
@@ -557,11 +612,11 @@ const ProfilePage = () => {
                   <span>Communication: {rev.communication}/5</span>
                   <span>Helpfulness: {rev.helpfulness}/5</span>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         )}
-      </div>
+      </motion.div>
 
       {/* Add Skill Modal */}
       <AddSkillModal

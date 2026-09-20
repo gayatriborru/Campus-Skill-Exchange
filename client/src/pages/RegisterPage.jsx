@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { Sparkles, ArrowRight, User, Mail, Lock, Building, Calendar, Coins } from 'lucide-react';
@@ -51,7 +52,7 @@ const RegisterPage = () => {
       });
 
       toastSuccess('Registration successful! +50 Starting Skill Points awarded.', 'Welcome!');
-      navigate('/explore');
+      navigate('/users');
     } catch (err) {
       toastError(err.customMessage || 'Registration failed. Please check your credentials.');
     } finally {
@@ -61,9 +62,14 @@ const RegisterPage = () => {
 
   return (
     <div className="min-h-[85vh] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-lg text-center">
-        <Link to="/" className="inline-flex items-center gap-2 mb-4">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
+      <motion.div
+        initial={{ opacity: 0, y: -12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease: 'easeOut' }}
+        className="sm:mx-auto sm:w-full sm:max-w-lg text-center"
+      >
+        <Link to="/" className="inline-flex items-center gap-2 mb-4 group">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-brand-500/20 group-hover:scale-105 transition-transform">
             <Sparkles className="w-5 h-5" />
           </div>
           <span className="text-2xl font-extrabold bg-gradient-to-r from-brand-700 to-indigo-600 bg-clip-text text-transparent">
@@ -79,13 +85,18 @@ const RegisterPage = () => {
             Sign in to existing account
           </Link>
         </p>
-      </div>
+      </motion.div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-lg">
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.08, ease: 'easeOut' }}
+        className="mt-8 sm:mx-auto sm:w-full sm:max-w-lg"
+      >
         <div className="bg-white py-8 px-6 sm:px-10 rounded-3xl border border-slate-200 shadow-xl shadow-slate-100 space-y-6">
           {/* Bonus Banner */}
-          <div className="flex items-center gap-2.5 p-3.5 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-900 text-xs">
-            <Coins className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+          <div className="flex items-center gap-2.5 p-3.5 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-900 text-xs hover:bg-emerald-100/70 transition-colors">
+            <Coins className="w-5 h-5 text-emerald-600 flex-shrink-0 animate-pulse" />
             <p>
               <span className="font-bold">Welcome Gift:</span> All new students receive 50 complimentary Skill Points to immediately book learning sessions!
             </p>
@@ -102,8 +113,8 @@ const RegisterPage = () => {
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Aarav Patel"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 text-sm"
+                placeholder="Enter your full name"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 text-sm transition-all"
               />
             </div>
 
@@ -118,7 +129,7 @@ const RegisterPage = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="student@campus.edu"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 text-sm"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 text-sm transition-all"
               />
             </div>
 
@@ -134,7 +145,7 @@ const RegisterPage = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 text-sm"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 text-sm transition-all"
               />
             </div>
 
@@ -147,7 +158,7 @@ const RegisterPage = () => {
                 <select
                   value={department}
                   onChange={(e) => setDepartment(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 text-xs bg-white"
+                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 text-xs bg-white transition-all"
                 >
                   {DEPARTMENTS.map((dept) => (
                     <option key={dept} value={dept}>
@@ -165,7 +176,7 @@ const RegisterPage = () => {
                 <select
                   value={year}
                   onChange={(e) => setYear(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 text-xs bg-white"
+                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 text-xs bg-white transition-all"
                 >
                   {YEARS.map((y) => (
                     <option key={y} value={y}>
@@ -185,20 +196,22 @@ const RegisterPage = () => {
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 placeholder="What are your favorite topics? What skills do you dream of learning?"
-                className="w-full px-3.5 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 text-xs"
+                className="w-full px-3.5 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 text-xs transition-all"
               />
             </div>
 
-            <button
+            <motion.button
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.98 }}
               type="submit"
               disabled={submitting}
               className="w-full py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold shadow-md shadow-brand-600/20 transition-all disabled:opacity-50 cursor-pointer"
             >
               {submitting ? 'Creating Profile...' : 'Complete Registration'}
-            </button>
+            </motion.button>
           </form>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };

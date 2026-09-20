@@ -14,15 +14,6 @@ export const SocketProvider = ({ children }) => {
   const socketRef = useRef(null);
 
   useEffect(() => {
-    if (!isAuthenticated || !user?._id) {
-      if (socketRef.current) {
-        socketRef.current.disconnect();
-        socketRef.current = null;
-        setSocketConnected(false);
-      }
-      return;
-    }
-
     const socket = getSocket();
     socketRef.current = socket;
 
@@ -32,7 +23,9 @@ export const SocketProvider = ({ children }) => {
 
     const onConnect = () => {
       setSocketConnected(true);
-      socket.emit('user:join', user._id);
+      if (isAuthenticated && user?._id) {
+        socket.emit('user:join', user._id);
+      }
     };
 
     const onDisconnect = () => {
@@ -50,12 +43,38 @@ export const SocketProvider = ({ children }) => {
       } else {
         toastInfo(notif.message || 'You received a new campus notification.', notif.title || 'Notification');
       }
+      window.dispatchEvent(new CustomEvent('campus:notification:new', { detail: notif }));
+    };
+
+    const onUserRegistered = (newUser) => {
+      window.dispatchEvent(new CustomEvent('campus:user:registered', { detail: newUser }));
+    };
+
+    const onSessionNew = (session) => {
+      window.dispatchEvent(new CustomEvent('campus:session:updated', { detail: session }));
+    };
+
+    const onSessionUpdated = (session) => {
+      window.dispatchEvent(new CustomEvent('campus:session:updated', { detail: session }));
+    };
+
+    const onStatsUpdated = () => {
+      window.dispatchEvent(new CustomEvent('campus:stats:updated'));
+    };
+
+    const onSkillsUpdated = (data) => {
+      window.dispatchEvent(new CustomEvent('campus:skills:updated', { detail: data }));
     };
 
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
     socket.on('users:online', onUsersOnline);
     socket.on('notification:receive', onNotificationReceive);
+    socket.on('user:registered', onUserRegistered);
+    socket.on('session:new', onSessionNew);
+    socket.on('session:updated', onSessionUpdated);
+    socket.on('stats:updated', onStatsUpdated);
+    socket.on('user:skillsUpdated', onSkillsUpdated);
 
     if (socket.connected) {
       onConnect();
@@ -66,6 +85,11 @@ export const SocketProvider = ({ children }) => {
       socket.off('disconnect', onDisconnect);
       socket.off('users:online', onUsersOnline);
       socket.off('notification:receive', onNotificationReceive);
+      socket.off('user:registered', onUserRegistered);
+      socket.off('session:new', onSessionNew);
+      socket.off('session:updated', onSessionUpdated);
+      socket.off('stats:updated', onStatsUpdated);
+      socket.off('user:skillsUpdated', onSkillsUpdated);
     };
   }, [isAuthenticated, user?._id, toastBadge, toastInfo]);
 

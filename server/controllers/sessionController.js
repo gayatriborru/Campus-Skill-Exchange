@@ -33,7 +33,7 @@ const createSession = async (req, res, next) => {
     });
 
     // Notify teacher
-    await Notification.create({
+    const notification = await Notification.create({
       recipient: teacher,
       sender: learnerId,
       type: 'SESSION_REQUEST',
@@ -46,6 +46,14 @@ const createSession = async (req, res, next) => {
       .populate('teacher', 'name profileImage department averageRating')
       .populate('learner', 'name profileImage department')
       .populate('skill', 'name category');
+
+    // Emit live real-time events
+    const io = req.app.get('io');
+    if (io) {
+      io.emitToUser?.(teacher, 'notification:receive', notification);
+      io.emitToUser?.(teacher, 'session:new', populated);
+      io.emit('stats:updated');
+    }
 
     return res.status(201).json({
       success: true,
@@ -101,7 +109,7 @@ const getSessions = async (req, res, next) => {
   }
 };
 
-// @desc    Update session status (Accept, Reject, Reschedule, Complete, Cancel)
+// @desc    Update session status (Accept, Reject, Complete, Cancel)
 // @route   PUT /api/sessions/:id
 const updateSession = async (req, res, next) => {
   try {
@@ -126,6 +134,8 @@ const updateSession = async (req, res, next) => {
         message: 'You do not have permission to update this session.',
       });
     }
+
+    const io = req.app.get('io');
 
     // Status transitions
     if (status) {
@@ -158,7 +168,7 @@ const updateSession = async (req, res, next) => {
         await checkAndAwardBadges(session.learner._id);
 
         // Notify learner to rate session
-        await Notification.create({
+        const notif = await Notification.create({
           recipient: session.learner._id,
           sender: session.teacher._id,
           type: 'SESSION_COMPLETED',
@@ -166,11 +176,14 @@ const updateSession = async (req, res, next) => {
           message: `Your session with ${session.teacher.name} has concluded. Please leave a rating!`,
           link: `/sessions`,
         });
+        if (io) {
+          io.emitToUser?.(session.learner._id, 'notification:receive', notif);
+        }
       }
 
       // Notifications on accept / reject
       if (status === 'Accepted' || status === 'Scheduled') {
-        await Notification.create({
+        const notif = await Notification.create({
           recipient: session.learner._id,
           sender: session.teacher._id,
           type: 'SESSION_ACCEPTED',
@@ -178,8 +191,11 @@ const updateSession = async (req, res, next) => {
           message: `${session.teacher.name} accepted your skill exchange session!`,
           link: '/sessions',
         });
+        if (io) {
+          io.emitToUser?.(session.learner._id, 'notification:receive', notif);
+        }
       } else if (status === 'Rejected') {
-        await Notification.create({
+        const notif = await Notification.create({
           recipient: session.learner._id,
           sender: session.teacher._id,
           type: 'SESSION_REJECTED',
@@ -187,6 +203,9 @@ const updateSession = async (req, res, next) => {
           message: `${session.teacher.name} was unable to accept your session request.`,
           link: '/sessions',
         });
+        if (io) {
+          io.emitToUser?.(session.learner._id, 'notification:receive', notif);
+        }
       }
     }
 
@@ -202,6 +221,13 @@ const updateSession = async (req, res, next) => {
       .populate('teacher', 'name profileImage department averageRating')
       .populate('learner', 'name profileImage department averageRating')
       .populate('skill', 'name category');
+
+    // Real-time broadcast to both participants and update global stats
+    if (io) {
+      io.emitToUser?.(session.teacher._id, 'session:updated', updated);
+      io.emitToUser?.(session.learner._id, 'session:updated', updated);
+      io.emit('stats:updated');
+    }
 
     return res.status(200).json({
       success: true,

@@ -1,17 +1,28 @@
 import axios from 'axios';
 
-const rawBaseURL = import.meta.env.VITE_API_URL || '/api';
-
 const getBaseURL = () => {
-  if (!rawBaseURL || rawBaseURL === '/api') return '/api';
-  let url = rawBaseURL.trim();
-  if (!url.startsWith('http://') && !url.startsWith('https://')) {
-    url = `https://${url}`;
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl && envUrl.trim() && envUrl !== '/api') {
+    let url = envUrl.trim();
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = `https://${url}`;
+    }
+    if (!url.endsWith('/api')) {
+      url = `${url.replace(/\/$/, '')}/api`;
+    }
+    return url;
   }
-  if (!url.endsWith('/api')) {
-    url = `${url.replace(/\/$/, '')}/api`;
+
+  // Local development: connect directly to Express server on port 3000
+  if (
+    typeof window !== 'undefined' &&
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ) {
+    return 'http://localhost:3000/api';
   }
-  return url;
+
+  // Production fallback if VITE_API_URL wasn't injected at build time
+  return 'https://campus-skill-exchange-api.onrender.com/api';
 };
 
 const api = axios.create({

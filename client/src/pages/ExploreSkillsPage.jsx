@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { userService } from '../services/userService';
 import { skillService } from '../services/skillService';
 import { useAuth } from '../context/AuthContext';
@@ -90,7 +91,7 @@ const ExploreSkillsPage = () => {
             minRating: minRating || undefined,
             sortBy,
           });
-          setStudents(res.students || []);
+          setStudents(res.users || res.students || []);
         } else {
           const res = await skillService.getSkills({
             category: category !== 'All' ? category : undefined,
@@ -140,7 +141,12 @@ const ExploreSkillsPage = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease: 'easeOut' }}
+        className="flex flex-col md:flex-row md:items-center justify-between gap-4"
+      >
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
             Explore Campus Skills & Mentors
@@ -155,7 +161,7 @@ const ExploreSkillsPage = () => {
           <button
             type="button"
             onClick={() => setActiveTab('mentors')}
-            className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
+            className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold active:scale-95 transition-all ${
               activeTab === 'mentors'
                 ? 'bg-white text-slate-900 shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
@@ -167,7 +173,7 @@ const ExploreSkillsPage = () => {
           <button
             type="button"
             onClick={() => setActiveTab('skills')}
-            className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
+            className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold active:scale-95 transition-all ${
               activeTab === 'skills'
                 ? 'bg-white text-slate-900 shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
@@ -177,7 +183,7 @@ const ExploreSkillsPage = () => {
             Skills Catalog
           </button>
         </div>
-      </div>
+      </motion.div>
 
       {/* Error Banner */}
       {error && (
@@ -189,13 +195,18 @@ const ExploreSkillsPage = () => {
 
       {/* Category Pills Filter */}
       {categories.length > 1 && (
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.05 }}
+          className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none"
+        >
           {categories.map((cat) => (
             <button
               key={cat}
               type="button"
               onClick={() => handleCategoryClick(cat)}
-              className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+              className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap active:scale-95 transition-all ${
                 category === cat
                   ? 'bg-brand-600 text-white shadow-xs shadow-brand-600/20'
                   : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
@@ -204,11 +215,16 @@ const ExploreSkillsPage = () => {
               {cat}
             </button>
           ))}
-        </div>
+        </motion.div>
       )}
 
       {/* Search & Secondary Filter Bar */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 bg-white p-3 rounded-2xl border border-slate-200 shadow-xs">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, delay: 0.08 }}
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 bg-white p-3 rounded-2xl border border-slate-200 shadow-xs"
+      >
         {/* Search */}
         <div className="relative">
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
@@ -265,7 +281,7 @@ const ExploreSkillsPage = () => {
             <option value="newest">Sort: Newly Joined</option>
           </select>
         </div>
-      </div>
+      </motion.div>
 
       {/* Main Results Display */}
       {loading ? (
@@ -274,17 +290,20 @@ const ExploreSkillsPage = () => {
         students.length === 0 ? (
           <div className="text-center py-16 bg-white rounded-3xl border border-slate-200 p-8">
             <GraduationCap className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-            <h3 className="text-base font-bold text-slate-800">No student mentors match criteria</h3>
+            <h3 className="text-base font-bold text-slate-800">No registered users yet</h3>
             <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-              Try adjusting your category or department filters, or clear your search terms.
+              No registered campus members in MongoDB match your criteria.
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {students.map((st) => (
-              <div
+            {students.map((st, index) => (
+              <motion.div
                 key={st._id}
-                className="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-all p-5 flex flex-col justify-between"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.28, delay: index * 0.04 }}
+                className="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-lg card-hover-lift transition-all p-5 flex flex-col justify-between group"
               >
                 <div>
                   {/* Top row: Avatar, Info, Rating */}
@@ -295,7 +314,7 @@ const ExploreSkillsPage = () => {
                         `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(st.name)}`
                       }
                       alt={st.name}
-                      className="w-12 h-12 rounded-full object-cover border border-brand-200 flex-shrink-0"
+                      className="w-12 h-12 rounded-full object-cover border border-brand-200 flex-shrink-0 group-hover:scale-105 transition-transform"
                     />
                     <div className="min-w-0 flex-1">
                       <h3 className="text-sm font-bold text-slate-900 truncate">{st.name}</h3>
@@ -374,14 +393,14 @@ const ExploreSkillsPage = () => {
                   <button
                     type="button"
                     onClick={() => handleBookSession(st)}
-                    className="flex-1 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold shadow-xs transition-colors text-center"
+                    className="flex-1 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 active:scale-97 text-white text-xs font-semibold shadow-xs transition-all text-center"
                   >
                     Request Session
                   </button>
                   <button
                     type="button"
                     onClick={() => handleStartChat(st._id)}
-                    className="p-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 transition-colors"
+                    className="p-2 rounded-xl border border-slate-200 hover:bg-slate-50 active:scale-95 text-slate-600 transition-all"
                     title="Message Student"
                   >
                     <MessageSquare className="w-4 h-4" />
@@ -389,23 +408,26 @@ const ExploreSkillsPage = () => {
                   <button
                     type="button"
                     onClick={() => navigate(`/profile/${st._id}`)}
-                    className="p-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 transition-colors"
+                    className="p-2 rounded-xl border border-slate-200 hover:bg-slate-50 active:scale-95 text-slate-600 transition-all"
                     title="View Profile"
                   >
                     <Users className="w-4 h-4" />
                   </button>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         )
       ) : (
         /* Skills Catalog Grid */
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {skills.map((skill) => (
-            <div
+          {skills.map((skill, index) => (
+            <motion.div
               key={skill._id}
-              className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.25, delay: index * 0.03 }}
+              className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs hover:shadow-lg card-hover-lift transition-all flex flex-col justify-between"
             >
               <div>
                 <div className="flex items-center justify-between gap-2 mb-2">
@@ -426,11 +448,11 @@ const ExploreSkillsPage = () => {
                   setSearch(skill.name);
                   setActiveTab('mentors');
                 }}
-                className="w-full py-2 rounded-xl bg-slate-100 hover:bg-brand-50 hover:text-brand-700 text-slate-700 text-xs font-semibold transition-colors"
+                className="w-full py-2 rounded-xl bg-slate-100 hover:bg-brand-50 hover:text-brand-700 active:scale-98 text-slate-700 text-xs font-semibold transition-all"
               >
                 Find Mentors Teaching This Skill
               </button>
-            </div>
+            </motion.div>
           ))}
         </div>
       )}

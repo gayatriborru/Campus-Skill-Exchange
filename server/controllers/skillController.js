@@ -143,6 +143,12 @@ const addStudentSkill = async (req, res, next) => {
 
     const populated = await StudentSkill.findById(studentSkill._id).populate('skill');
 
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('stats:updated');
+      io.emit('user:skillsUpdated', { userId: req.user._id });
+    }
+
     return res.status(201).json({
       success: true,
       message: `Skill added to "${type}" list successfully!`,
@@ -168,6 +174,12 @@ const deleteStudentSkill = async (req, res, next) => {
 
     // Decrement popularity
     await Skill.findByIdAndUpdate(studentSkill.skill, { $inc: { popularityCount: -1 } });
+
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('stats:updated');
+      io.emit('user:skillsUpdated', { userId: req.user._id });
+    }
 
     return res.status(200).json({
       success: true,

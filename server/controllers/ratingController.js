@@ -77,7 +77,7 @@ const createRating = async (req, res, next) => {
     await checkAndAwardBadges(session.teacher);
 
     // Notify teacher
-    await Notification.create({
+    const notif = await Notification.create({
       recipient: session.teacher,
       sender: learnerId,
       type: 'RATING_RECEIVED',
@@ -85,6 +85,12 @@ const createRating = async (req, res, next) => {
       message: `${req.user.name} gave you a ${overallRating}★ rating with feedback.`,
       link: '/profile',
     });
+
+    const io = req.app.get('io');
+    if (io) {
+      io.emitToUser?.(session.teacher, 'notification:receive', notif);
+      io.emit('stats:updated');
+    }
 
     const populated = await Rating.findById(rating._id)
       .populate('teacher', 'name profileImage')

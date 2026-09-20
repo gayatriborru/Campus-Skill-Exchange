@@ -6,38 +6,41 @@ Built with **React 18 + Tailwind CSS + Vite** on the frontend, **Express.js + So
 
 ---
 
-## 🚀 Live Production Deployment with Render Blueprint
+## 🌐 Live Deployed Links
 
-This repository includes a production-ready **Render Blueprint** (`render.yaml`) that automatically provisions both the **Backend API Web Service** and the **Frontend Static Site** with automatic environment variable linking and zero configuration required.
-
-### 1-Click Render Deployment Steps
-
-1. **Push this repository to GitHub**:
-   ```bash
-   git push origin main
-   ```
-
-2. **Open Render Dashboard**:
-   - Go to [dashboard.render.com](https://dashboard.render.com/) and log in.
-   - Click **New +** in the top right corner and select **Blueprint**.
-
-3. **Connect Your GitHub Repository**:
-   - Select `Campus-Skill-Exchange` (or paste `https://github.com/gayatriborru/Campus-Skill-Exchange`).
-   - Render will automatically detect and parse [`render.yaml`](./render.yaml).
-
-4. **Provide Required Environment Variable**:
-   - **`MONGODB_URI`**: Paste your MongoDB Atlas connection string:
-     ```
-     mongodb+srv://<username>:<password>@cluster0.mongodb.net/campus_skill_exchange?retryWrites=true&w=majority
-     ```
-   - Render automatically generates a secure `JWT_SECRET` and wires `CLIENT_URL` and `VITE_API_URL` between the services.
-
-5. **Click "Apply"**:
-   - Render will provision and launch:
-     - 🟢 **`campus-skill-exchange-api`** (Node.js Web Service on port 10000)
-     - 🟢 **`campus-skill-exchange-client`** (Fast CDN-backed Static Site)
+| Service | Platform | Live URL | Status |
+| :--- | :--- | :--- | :--- |
+| **Frontend Web App (Primary)** | **Vercel** | [https://campus-skill-exchange.vercel.app](https://campus-skill-exchange.vercel.app) | 🟢 Continuous Deployment from GitHub `main` |
+| **Frontend Web App (Static)** | **Render** | [https://campus-skill-exchange-client.onrender.com](https://campus-skill-exchange-client.onrender.com) | 🟢 Auto-deployed via Render Blueprint |
+| **Backend REST API** | **Render** | [https://campus-skill-exchange-api.onrender.com](https://campus-skill-exchange-api.onrender.com) | 🟢 Live Node.js + Express API |
+| **API Health Check** | **Render** | [https://campus-skill-exchange-api.onrender.com/api/health](https://campus-skill-exchange-api.onrender.com/api/health) | 🟢 Online Uptime Monitor |
+| **GitHub Repository** | **GitHub** | [https://github.com/gayatriborru/Campus-Skill-Exchange](https://github.com/gayatriborru/Campus-Skill-Exchange) | 🟢 Source of Truth |
 
 ---
+
+## 🚀 Automatic Continuous Deployment (CI/CD)
+
+Whenever changes are pushed to `origin main` on GitHub:
+1. **Vercel** automatically detects the commit, builds the React + Vite frontend using [`vercel.json`](./vercel.json), and deploys to the global edge network.
+2. **Render** automatically detects the commit, provisions the Node.js API and Socket.IO server via [`render.yaml`](./render.yaml), and deploys with zero downtime.
+
+### Deploying to Vercel (1-Click Git Integration)
+1. Go to [vercel.com](https://vercel.com/) and click **Add New > Project**.
+2. Import `gayatriborru/Campus-Skill-Exchange` from GitHub.
+3. Keep default settings (the root [`vercel.json`](./vercel.json) automatically sets build command to `cd client && npm install && npm run build` and output to `client/dist`).
+4. (Optional) Add Environment Variables:
+   - `VITE_API_URL`: `https://campus-skill-exchange-api.onrender.com/api`
+   - `VITE_SOCKET_URL`: `https://campus-skill-exchange-api.onrender.com`
+5. Click **Deploy**. Vercel will deploy your app in seconds!
+
+### Deploying to Render (Blueprint)
+1. Go to [dashboard.render.com](https://dashboard.render.com/) and click **New + > Blueprint**.
+2. Select `Campus-Skill-Exchange` (`https://github.com/gayatriborru/Campus-Skill-Exchange`).
+3. Set the `MONGODB_URI` environment variable to your MongoDB Atlas connection string.
+4. Click **Apply**. Render will launch:
+   - 🟢 `campus-skill-exchange-api` (Web Service on port 10000)
+   - 🟢 `campus-skill-exchange-client` (Static Site CDN)
+
 
 ## 🛠 Tech Stack & Architecture
 

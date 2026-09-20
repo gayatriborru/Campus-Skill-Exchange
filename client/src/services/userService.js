@@ -8,7 +8,7 @@ export const userService = {
 
   getUserById: async (id) => {
     const res = await api.get(`/users/${id}`);
-    return res.data.student;
+    return res.data.student || res.data.user;
   },
 
   getMySkills: async () => {

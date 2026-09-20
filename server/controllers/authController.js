@@ -33,22 +33,32 @@ const register = async (req, res, next) => {
 
     const token = generateToken(user._id, user.role);
 
+    const safeUser = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      department: user.department,
+      year: user.year,
+      bio: user.bio,
+      profileImage: user.profileImage,
+      role: user.role,
+      skillPoints: user.skillPoints,
+      averageRating: user.averageRating,
+      createdAt: user.createdAt,
+    };
+
+    // Emit live real-time event to all connected sockets
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('user:registered', safeUser);
+      io.emit('stats:updated');
+    }
+
     return res.status(201).json({
       success: true,
       message: 'Registration successful! Welcome to Campus Skill Exchange.',
       token,
-      user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        department: user.department,
-        year: user.year,
-        bio: user.bio,
-        profileImage: user.profileImage,
-        role: user.role,
-        skillPoints: user.skillPoints,
-        averageRating: user.averageRating,
-      },
+      user: safeUser,
     });
   } catch (error) {
     next(error);
