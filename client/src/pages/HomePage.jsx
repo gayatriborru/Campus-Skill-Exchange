@@ -11,7 +11,6 @@ import BadgePill from '../components/common/BadgePill';
 import SkillTag from '../components/common/SkillTag';
 import BookSessionModal from '../components/sessions/BookSessionModal';
 import LoadingSpinner from '../components/common/LoadingSpinner';
-import GlowCursor from '../components/animations/GlowCursor';
 import {
   Sparkles,
   ArrowRight,
@@ -99,21 +98,7 @@ const HomePage = () => {
   };
 
   return (
-    <div className="relative w-full overflow-hidden bg-black text-white min-h-screen">
-      {/* React Bits Glow Cursor Background Visual Effect */}
-      <GlowCursor
-        className="fixed inset-0 pointer-events-none z-0"
-        color="#67E8F9"
-        secondaryColor="#A78BFA"
-        trailLength={40}
-        trailWidth={8}
-        trailTaper={0.8}
-        glowIntensity={1.8}
-        glowSpread={1.2}
-        pulseSpeed={1.1}
-        blendMode="screen"
-      />
-
+    <div className="relative w-full overflow-hidden bg-transparent text-white min-h-screen">
       <div className="space-y-16 pb-16 relative z-10">
         {/* 1. Hero Section */}
         <section className="relative overflow-hidden pt-12 pb-16 lg:pt-20 lg:pb-24 border-b border-slate-800/80 bg-transparent">

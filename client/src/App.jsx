@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import ProtectedRoute from './components/layout/ProtectedRoute';
+import GlowCursor from './components/animations/GlowCursor';
 
 import HomePage from './pages/HomePage';
 import ExploreSkillsPage from './pages/ExploreSkillsPage';
@@ -20,11 +21,25 @@ import NotFoundPage from './pages/NotFoundPage';
 
 const App = () => {
   const location = useLocation();
-  const isHome = location.pathname === '/';
 
   return (
-    <div className={`min-h-screen flex flex-col ${isHome ? 'bg-black text-white' : 'bg-slate-50 text-slate-900'} selection:bg-brand-500 selection:text-white transition-colors duration-200`}>
-      <Navbar />
+    <div className="min-h-screen flex flex-col bg-black text-white selection:bg-brand-500 selection:text-white relative overflow-x-hidden">
+      {/* Global React Bits Glow Cursor Background Visual Effect across ALL routes */}
+      <GlowCursor
+        className="fixed inset-0 pointer-events-none z-0"
+        color="#67E8F9"
+        secondaryColor="#A78BFA"
+        trailLength={40}
+        trailWidth={8}
+        trailTaper={0.8}
+        glowIntensity={1.8}
+        glowSpread={1.2}
+        pulseSpeed={1.1}
+        blendMode="screen"
+      />
+
+      <div className="relative z-10 flex flex-col min-h-screen">
+        <Navbar />
 
       <main className="flex-1">
         <AnimatePresence mode="wait">
@@ -99,7 +114,8 @@ const App = () => {
     </AnimatePresence>
   </main>
 
-      <Footer />
+        <Footer />
+      </div>
     </div>
   );
 };

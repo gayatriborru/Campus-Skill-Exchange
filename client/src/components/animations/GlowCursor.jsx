@@ -181,6 +181,11 @@ const GlowCursor = ({
     const canvas = canvasRef.current;
     if (!container || !canvas) return;
 
+    // Respect user's prefers-reduced-motion setting
+    if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return;
+    }
+
     const initialConfig = propsRef.current;
     let renderer;
     try {
@@ -386,6 +391,15 @@ const GlowCursor = ({
       if (!destroyed) raf = requestAnimationFrame(render);
     };
 
+    const onTouchStart = (event) => {
+      onWindowTouchMove(event);
+    };
+
+    const onTouchEnd = () => {
+      pointerInside = false;
+      lastInputTime = performance.now();
+    };
+
     const resizeObserver = new ResizeObserver(resize);
     resizeObserver.observe(container);
 
@@ -394,6 +408,8 @@ const GlowCursor = ({
     container.addEventListener('pointerleave', onPointerLeave);
     window.addEventListener('pointermove', onWindowPointerMove);
     window.addEventListener('touchmove', onWindowTouchMove, { passive: true });
+    window.addEventListener('touchstart', onTouchStart, { passive: true });
+    window.addEventListener('touchend', onTouchEnd, { passive: true });
 
     resize();
     raf = requestAnimationFrame(render);
@@ -407,6 +423,8 @@ const GlowCursor = ({
       container.removeEventListener('pointerleave', onPointerLeave);
       window.removeEventListener('pointermove', onWindowPointerMove);
       window.removeEventListener('touchmove', onWindowTouchMove);
+      window.removeEventListener('touchstart', onTouchStart);
+      window.removeEventListener('touchend', onTouchEnd);
       if (mesh?.geometry) mesh.geometry.remove();
       if (program) program.remove();
     };
