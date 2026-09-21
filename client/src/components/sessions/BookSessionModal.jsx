@@ -73,7 +73,7 @@ const BookSessionModal = ({
 
     try {
       setLoading(true);
-      const session = await sessionService.createSession({
+      const result = await sessionService.createSession({
         teacher: teacher._id,
         skill: skillId,
         date,
@@ -84,11 +84,9 @@ const BookSessionModal = ({
         notes: notes.trim(),
       });
 
-      toastSuccess(
-        `Session invitation sent to ${teacher.name}! You will be notified once they accept.`,
-        'Exchange Requested'
-      );
-      onSessionCreated && onSessionCreated(session);
+      const successMessage = result?.message || 'Session request sent successfully.';
+      toastSuccess(successMessage, 'Exchange Requested');
+      onSessionCreated && onSessionCreated(result?.session || result);
       onClose();
     } catch (err) {
       toastError(err.customMessage || 'Failed to schedule session.');

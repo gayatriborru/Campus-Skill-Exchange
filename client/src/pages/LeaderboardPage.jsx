@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { userService } from '../services/userService';
 import { badgeService } from '../services/badgeService';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
 import StarRating from '../components/common/StarRating';
 import BadgePill from '../components/common/BadgePill';
 import LoadingSpinner from '../components/common/LoadingSpinner';
@@ -22,6 +23,7 @@ import {
 } from 'lucide-react';
 
 const LeaderboardPage = () => {
+  const { isAuthenticated } = useAuth();
   const [students, setStudents] = useState([]);
   const [badges, setBadges] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -31,6 +33,10 @@ const LeaderboardPage = () => {
   const { toastError } = useToast();
 
   const fetchLeaderboardData = async () => {
+    if (!isAuthenticated) {
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       setError(null);
@@ -42,7 +48,7 @@ const LeaderboardPage = () => {
       setBadges(badgesRes || []);
     } catch (err) {
       console.error('Error fetching leaderboard data:', err);
-      const errMsg = err.customMessage || 'Failed to load leaderboard data from database.';
+      const errMsg = err.customMessage || 'Failed to load leaderboard data. Please check your connection and try again.';
       setError(errMsg);
       toastError(errMsg);
     } finally {
@@ -51,8 +57,14 @@ const LeaderboardPage = () => {
   };
 
   useEffect(() => {
-    fetchLeaderboardData();
-  }, [metric]);
+    if (isAuthenticated) {
+      fetchLeaderboardData();
+    } else {
+      setStudents([]);
+      setBadges([]);
+      setLoading(false);
+    }
+  }, [isAuthenticated, metric]);
 
   const top3 = students.slice(0, 3);
   const rest = students.slice(3);
@@ -343,7 +355,7 @@ const LeaderboardPage = () => {
         </div>
 
         {badges.length === 0 ? (
-          <p className="text-xs text-slate-400 italic">No badges configured in database.</p>
+          <p className="text-xs text-slate-400 italic">No badges configured yet.</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {badges.map((b) => (

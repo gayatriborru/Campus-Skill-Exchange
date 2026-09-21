@@ -7,7 +7,6 @@ import { skillService } from '../services/skillService';
 import { userService } from '../services/userService';
 import { analyticsService } from '../services/analyticsService';
 import StarRating from '../components/common/StarRating';
-import BadgePill from '../components/common/BadgePill';
 import SkillTag from '../components/common/SkillTag';
 import BookSessionModal from '../components/sessions/BookSessionModal';
 import LoadingSpinner from '../components/common/LoadingSpinner';
@@ -18,10 +17,11 @@ import {
   Repeat,
   Award,
   Users,
-  CalendarCheck,
   CheckCircle2,
   BookOpen,
   AlertCircle,
+  ShieldCheck,
+  Zap,
 } from 'lucide-react';
 
 const HomePage = () => {
@@ -33,7 +33,7 @@ const HomePage = () => {
   const [skills, setSkills] = useState([]);
   const [featuredMentors, setFeaturedMentors] = useState([]);
   const [platformStats, setPlatformStats] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   // Booking modal state
@@ -41,6 +41,11 @@ const HomePage = () => {
   const [bookingModalOpen, setBookingModalOpen] = useState(false);
 
   const loadHomeData = async () => {
+    if (!isAuthenticated) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
@@ -50,11 +55,11 @@ const HomePage = () => {
         analyticsService.getPlatformStats(),
       ]);
       setSkills(skillsData || []);
-      setFeaturedMentors(usersData.students || []);
+      setFeaturedMentors(usersData.students || usersData.users || []);
       setPlatformStats(statsData || null);
     } catch (err) {
       console.error('Error loading home data:', err);
-      const errMsg = err.customMessage || 'Unable to connect to campus backend API. Please ensure server is running.';
+      const errMsg = err.customMessage || 'Failed to load home data.';
       setError(errMsg);
       toastError(errMsg);
     } finally {
@@ -62,12 +67,22 @@ const HomePage = () => {
     }
   };
 
+  // Only fetch private database information when user is authenticated
   useEffect(() => {
-    loadHomeData();
-  }, []);
+    if (isAuthenticated) {
+      loadHomeData();
+    } else {
+      setSkills([]);
+      setFeaturedMentors([]);
+      setPlatformStats(null);
+      setError(null);
+      setLoading(false);
+    }
+  }, [isAuthenticated]);
 
   // Real-time listener: refresh live platform stats and mentors whenever changes occur in MongoDB
   useEffect(() => {
+    if (!isAuthenticated) return;
     const handleStatsUpdated = () => {
       loadHomeData();
     };
@@ -77,10 +92,15 @@ const HomePage = () => {
       window.removeEventListener('campus:stats:updated', handleStatsUpdated);
       window.removeEventListener('campus:user:registered', handleStatsUpdated);
     };
-  }, []);
+  }, [isAuthenticated]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
+    if (!isAuthenticated) {
+      toastError('Please login to explore mentors and skills.');
+      navigate('/login');
+      return;
+    }
     if (searchQuery.trim()) {
       navigate(`/explore?search=${encodeURIComponent(searchQuery.trim())}`);
     } else {
@@ -88,8 +108,17 @@ const HomePage = () => {
     }
   };
 
+  const handleExploreClick = (e) => {
+    if (!isAuthenticated) {
+      e.preventDefault();
+      toastError('Please login to explore mentors and skills.');
+      navigate('/login');
+    }
+  };
+
   const handleBookWithMentor = (mentor) => {
     if (!isAuthenticated) {
+      toastError('Please login to request a session.');
       navigate('/login');
       return;
     }
@@ -184,7 +213,7 @@ const HomePage = () => {
             </motion.form>
 
             {/* Error State Banner */}
-            {error && (
+            {error && isAuthenticated && (
               <div className="mt-6 max-w-xl mx-auto flex items-center justify-between gap-3 p-3.5 rounded-2xl bg-rose-950/60 border border-rose-800 text-rose-200 text-xs text-left">
                 <div className="flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0" />
@@ -200,42 +229,65 @@ const HomePage = () => {
               </div>
             )}
 
-            {/* Real Campus Stats Counter Bar (Data from MongoDB) */}
+            {/* Counter Bar: Authenticated Live Counts vs Public Community Highlights */}
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45, delay: 0.32, ease: 'easeOut' }}
               className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto pt-6 border-t border-slate-800/80"
             >
-              <div className="text-center p-3 rounded-xl hover:bg-slate-900/50 transition-colors">
-                <p className="text-2xl sm:text-3xl font-black text-white">
-                  {loading ? '...' : platformStats?.activeStudents ?? 0}
-                </p>
-                <p className="text-xs font-medium text-slate-400 mt-0.5">Active Campus Students</p>
-              </div>
-              <div className="text-center p-3 rounded-xl hover:bg-slate-900/50 transition-colors">
-                <p className="text-2xl sm:text-3xl font-black text-cyan-400">
-                  {loading ? '...' : platformStats?.totalSkills ?? 0}
-                </p>
-                <p className="text-xs font-medium text-slate-400 mt-0.5">Skills in Directory</p>
-              </div>
-              <div className="text-center p-3 rounded-xl hover:bg-slate-900/50 transition-colors">
-                <p className="text-2xl sm:text-3xl font-black text-emerald-400">
-                  {loading ? '...' : platformStats?.completedSessions ?? 0}
-                </p>
-                <p className="text-xs font-medium text-slate-400 mt-0.5">Sessions Exchanged</p>
-              </div>
-              <div className="text-center p-3 rounded-xl hover:bg-slate-900/50 transition-colors">
-                <p className="text-2xl sm:text-3xl font-black text-purple-400">
-                  {loading ? '...' : platformStats?.averageRating ? `${platformStats.averageRating} ★` : '0.0 ★'}
-                </p>
-                <p className="text-xs font-medium text-slate-400 mt-0.5">Average Mentor Rating</p>
-              </div>
+              {isAuthenticated ? (
+                <>
+                  <div className="text-center p-3 rounded-xl hover:bg-slate-900/50 transition-colors">
+                    <p className="text-2xl sm:text-3xl font-black text-white">
+                      {loading ? '...' : platformStats?.activeStudents ?? 0}
+                    </p>
+                    <p className="text-xs font-medium text-slate-400 mt-0.5">Active Campus Students</p>
+                  </div>
+                  <div className="text-center p-3 rounded-xl hover:bg-slate-900/50 transition-colors">
+                    <p className="text-2xl sm:text-3xl font-black text-cyan-400">
+                      {loading ? '...' : platformStats?.totalSkills ?? 0}
+                    </p>
+                    <p className="text-xs font-medium text-slate-400 mt-0.5">Skills in Directory</p>
+                  </div>
+                  <div className="text-center p-3 rounded-xl hover:bg-slate-900/50 transition-colors">
+                    <p className="text-2xl sm:text-3xl font-black text-emerald-400">
+                      {loading ? '...' : platformStats?.completedSessions ?? 0}
+                    </p>
+                    <p className="text-xs font-medium text-slate-400 mt-0.5">Sessions Exchanged</p>
+                  </div>
+                  <div className="text-center p-3 rounded-xl hover:bg-slate-900/50 transition-colors">
+                    <p className="text-2xl sm:text-3xl font-black text-purple-400">
+                      {loading ? '...' : platformStats?.averageRating ? `${platformStats.averageRating} ★` : '0.0 ★'}
+                    </p>
+                    <p className="text-xs font-medium text-slate-400 mt-0.5">Average Mentor Rating</p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="text-center p-3 rounded-xl bg-slate-900/40 border border-slate-800/60">
+                    <p className="text-2xl sm:text-3xl font-black text-white">100%</p>
+                    <p className="text-xs font-medium text-slate-400 mt-0.5">Peer-to-Peer Learning</p>
+                  </div>
+                  <div className="text-center p-3 rounded-xl bg-slate-900/40 border border-slate-800/60">
+                    <p className="text-2xl sm:text-3xl font-black text-cyan-400">Free</p>
+                    <p className="text-xs font-medium text-slate-400 mt-0.5">Skill-for-Skill Barter</p>
+                  </div>
+                  <div className="text-center p-3 rounded-xl bg-slate-900/40 border border-slate-800/60">
+                    <p className="text-2xl sm:text-3xl font-black text-emerald-400">1-on-1</p>
+                    <p className="text-xs font-medium text-slate-400 mt-0.5">Interactive Sessions</p>
+                  </div>
+                  <div className="text-center p-3 rounded-xl bg-slate-900/40 border border-slate-800/60">
+                    <p className="text-2xl sm:text-3xl font-black text-purple-400">Verified</p>
+                    <p className="text-xs font-medium text-slate-400 mt-0.5">Campus Community</p>
+                  </div>
+                </>
+              )}
             </motion.div>
           </div>
         </section>
 
-        {/* 2. How SkillVerse Works */}
+        {/* 2. How SkillVerse Works (Public Static Features Info) */}
         <motion.section
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -319,7 +371,8 @@ const HomePage = () => {
               </p>
             </div>
             <Link
-              to="/explore"
+              to={isAuthenticated ? '/explore' : '/login'}
+              onClick={handleExploreClick}
               className="inline-flex items-center gap-1.5 text-xs font-semibold text-cyan-400 hover:text-cyan-300 hover:gap-2 transition-all"
             >
               <span>View all student mentors</span>
@@ -327,7 +380,30 @@ const HomePage = () => {
             </Link>
           </div>
 
-          {loading ? (
+          {!isAuthenticated ? (
+            <div className="text-center py-12 bg-slate-900/80 backdrop-blur-sm rounded-3xl border border-slate-800 p-8 max-w-2xl mx-auto shadow-lg">
+              <Users className="w-12 h-12 text-cyan-400 mx-auto mb-3" />
+              <h3 className="text-lg font-bold text-white">Explore Campus Student Mentors</h3>
+              <p className="text-xs text-slate-300 mt-2 leading-relaxed">
+                Connect with peer tutors across engineering, design, data analysis, and communication.
+                Sign in to view student mentor profiles, ratings, and request 1-on-1 learning sessions.
+              </p>
+              <div className="mt-5 flex items-center justify-center gap-3">
+                <Link
+                  to="/login"
+                  className="px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold shadow-md active:scale-95 transition-all"
+                >
+                  Sign In to Browse Mentors
+                </Link>
+                <Link
+                  to="/register"
+                  className="px-5 py-2.5 rounded-xl border border-slate-700 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-semibold active:scale-95 transition-all"
+                >
+                  Create Account
+                </Link>
+              </div>
+            </div>
+          ) : loading ? (
             <LoadingSpinner text="Fetching campus student mentors..." />
           ) : featuredMentors.length === 0 ? (
             <div className="text-center py-12 bg-slate-900/80 backdrop-blur-sm rounded-3xl border border-slate-800 p-8">
@@ -448,7 +524,19 @@ const HomePage = () => {
               </p>
             </div>
 
-            {loading ? (
+            {!isAuthenticated ? (
+              <div className="mt-8 p-6 rounded-2xl bg-slate-900/80 border border-slate-800 text-center max-w-xl mx-auto relative z-10">
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Log in to access the full campus taxonomy, propose new skills, and connect with peers teaching programming, design, and business skills.
+                </p>
+                <Link
+                  to="/login"
+                  className="mt-4 inline-block px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold shadow-xs active:scale-95 transition-all"
+                >
+                  Sign In to Explore Skills
+                </Link>
+              </div>
+            ) : loading ? (
               <div className="py-8 text-center text-xs text-slate-400">Loading skills directory...</div>
             ) : skills.length === 0 ? (
               <div className="py-8 text-center text-xs text-slate-400">
@@ -473,10 +561,15 @@ const HomePage = () => {
                 Missing a skill? Propose new skills directly through your student profile!
               </p>
               <Link
-                to="/explore"
+                to={isAuthenticated ? '/explore' : '/login'}
+                onClick={handleExploreClick}
                 className="inline-flex items-center gap-2 text-xs font-bold text-cyan-300 hover:text-white hover:gap-2.5 transition-all"
               >
-                <span>Explore All {platformStats?.totalSkills ?? skills.length} Skills</span>
+                <span>
+                  {isAuthenticated
+                    ? `Explore All ${platformStats?.totalSkills ?? skills.length} Skills`
+                    : 'Explore Campus Skills'}
+                </span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>

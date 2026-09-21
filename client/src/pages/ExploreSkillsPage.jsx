@@ -65,6 +65,7 @@ const ExploreSkillsPage = () => {
 
   // Load real categories from MongoDB
   useEffect(() => {
+    if (!isAuthenticated) return;
     const loadCategories = async () => {
       try {
         const cats = await skillService.getCategories();
@@ -76,10 +77,14 @@ const ExploreSkillsPage = () => {
       }
     };
     loadCategories();
-  }, []);
+  }, [isAuthenticated]);
 
   // Fetch students or skills
   useEffect(() => {
+    if (!isAuthenticated) {
+      setLoading(false);
+      return;
+    }
     const fetchData = async () => {
       try {
         setLoading(true);
@@ -101,14 +106,14 @@ const ExploreSkillsPage = () => {
         }
       } catch (err) {
         console.error('Error fetching directory data:', err);
-        setError(err.customMessage || 'Failed to retrieve data from campus database.');
+        setError(err.customMessage || 'Failed to load skills. Please check your connection and try again.');
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [activeTab, search, category, department, minRating, sortBy]);
+  }, [isAuthenticated, activeTab, search, category, department, minRating, sortBy]);
 
   const handleCategoryClick = (cat) => {
     setCategory(cat);

@@ -16,7 +16,17 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    const isExplorerOrMentors =
+      location.pathname.startsWith('/explore') ||
+      location.pathname.startsWith('/users') ||
+      location.pathname.startsWith('/mentors') ||
+      location.pathname.startsWith('/leaderboard');
+
+    const message = isExplorerOrMentors
+      ? 'Please login to explore mentors and skills.'
+      : 'Please login to access this page.';
+
+    return <Navigate to="/login" state={{ from: location, message }} replace />;
   }
 
   if (adminOnly && !isAdmin) {

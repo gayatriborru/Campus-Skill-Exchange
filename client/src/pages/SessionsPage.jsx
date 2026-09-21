@@ -22,7 +22,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 
 const SessionsPage = () => {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const { toastSuccess, toastError } = useToast();
   const navigate = useNavigate();
 
@@ -38,6 +38,10 @@ const SessionsPage = () => {
   const [newBookingModalOpen, setNewBookingModalOpen] = useState(false);
 
   const fetchSessions = async () => {
+    if (!isAuthenticated) {
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       setError(null);
@@ -45,7 +49,7 @@ const SessionsPage = () => {
       setSessions(data || []);
     } catch (err) {
       console.error('Error fetching sessions:', err);
-      const msg = err.customMessage || 'Could not load sessions from database.';
+      const msg = err.customMessage || 'Failed to load sessions. Please check your connection and try again.';
       setError(msg);
       toastError(msg);
     } finally {
@@ -54,8 +58,13 @@ const SessionsPage = () => {
   };
 
   useEffect(() => {
-    fetchSessions();
-  }, []);
+    if (isAuthenticated) {
+      fetchSessions();
+    } else {
+      setSessions([]);
+      setLoading(false);
+    }
+  }, [isAuthenticated]);
 
   // Real-time listener: update sessions list whenever a session is requested, accepted, or concluded
   useEffect(() => {

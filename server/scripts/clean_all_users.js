@@ -4,10 +4,15 @@ const path = require('path');
 
 dotenv.config({ path: path.join(__dirname, '../.env') });
 
+const maskUri = (uri) => (uri ? uri.replace(/:\/\/([^:]+):([^@]+)@/, '://$1:****@') : 'none');
+
 const cleanAllUsers = async () => {
   try {
-    const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/campus_skill_exchange';
-    console.log(`[Cleaner] Connecting to MongoDB: ${mongoUri}`);
+    const mongoUri =
+      process.env.MONGODB_URI?.trim() ||
+      process.env.MONGO_URI?.trim() ||
+      'mongodb://127.0.0.1:27017/campus_skill_exchange';
+    console.log(`[Cleaner] Connecting to MongoDB: ${maskUri(mongoUri)}`);
     await mongoose.connect(mongoUri);
     console.log('[Cleaner] Connected.');
 

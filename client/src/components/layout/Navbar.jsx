@@ -22,6 +22,9 @@ import {
   Menu,
   X,
   Check,
+  Home,
+  Info,
+  Mail,
 } from 'lucide-react';
 
 const Navbar = () => {
@@ -96,18 +99,29 @@ const Navbar = () => {
     }
   };
 
-  const navLinks = [
+  const publicNavLinks = [
+    { name: 'Home', path: '/', icon: Home },
+    { name: 'About', path: '/about', icon: Info },
+    { name: 'Contact', path: '/contact', icon: Mail },
+  ];
+
+  const authNavLinks = [
+    { name: 'Home', path: '/', icon: Home },
     { name: 'Explore', path: '/explore', icon: Compass },
     { name: 'Users', path: '/users', icon: Users },
-    { name: 'Matchmaker', path: '/matchmaker', icon: Repeat, authRequired: true },
-    { name: 'Sessions', path: '/sessions', icon: Calendar, authRequired: true },
-    { name: 'Messages', path: '/messages', icon: MessageSquare, authRequired: true },
+    { name: 'Matchmaker', path: '/matchmaker', icon: Repeat },
+    { name: 'Sessions', path: '/sessions', icon: Calendar },
+    { name: 'Messages', path: '/messages', icon: MessageSquare },
     { name: 'Leaderboard', path: '/leaderboard', icon: Trophy },
+    { name: 'About', path: '/about', icon: Info },
+    { name: 'Contact', path: '/contact', icon: Mail },
   ];
 
   if (isAdmin) {
-    navLinks.push({ name: 'Admin', path: '/admin', icon: Shield });
+    authNavLinks.splice(7, 0, { name: 'Admin', path: '/admin', icon: Shield });
   }
+
+  const activeLinks = isAuthenticated ? authNavLinks : publicNavLinks;
 
   const isActive = (path) => {
     if (path === '/' && location.pathname === '/') return true;
@@ -142,8 +156,7 @@ const Navbar = () => {
 
             {/* Desktop Navigation Links */}
             <div className="hidden md:flex items-center gap-1">
-              {navLinks.map((link) => {
-                if (link.authRequired && !isAuthenticated) return null;
+              {activeLinks.map((link) => {
                 const Icon = link.icon;
                 const active = isActive(link.path);
                 return (
@@ -232,23 +245,101 @@ const Navbar = () => {
                               No notifications yet!
                             </div>
                           ) : (
-                            notifications.map((n) => (
+                          notifications.map((n) => {
+                            const isUnread = !n.read && !n.isRead;
+                            const isSessionReq = n.type === 'SESSION_REQUEST';
+                            const meta = n.metadata || {};
+
+                            return (
                               <div
                                 key={n._id}
-                                className={`p-3 text-xs hover:bg-slate-800/50 transition-colors ${
-                                  !n.isRead ? 'bg-cyan-950/20' : ''
+                                onClick={() => {
+                                  setNotifDropdownOpen(false);
+                                  if (isUnread) {
+                                    notificationService.markAsRead(n._id).catch(() => {});
+                                    setNotifications((prev) =>
+                                      prev.map((item) =>
+                                        item._id === n._id
+                                          ? { ...item, read: true, isRead: true }
+                                          : item
+                                      )
+                                    );
+                                    setUnreadCount((c) => Math.max(0, c - 1));
+                                  }
+                                  navigate(n.link || '/sessions');
+                                }}
+                                className={`p-3 text-xs hover:bg-slate-800/60 transition-colors cursor-pointer flex items-start gap-2.5 ${
+                                  isUnread ? 'bg-cyan-950/25 border-l-2 border-cyan-400' : ''
                                 }`}
                               >
-                                <p className="font-semibold text-white">{n.title}</p>
-                                <p className="text-slate-300 mt-0.5 line-clamp-2">{n.message}</p>
-                                <span className="text-[10px] text-slate-400 mt-1 block">
-                                  {new Date(n.createdAt).toLocaleTimeString([], {
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                  })}
-                                </span>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center justify-between gap-1">
+                                    <p className="font-semibold text-white flex items-center gap-1.5 truncate">
+                                      {isSessionReq && (
+                                        <Calendar className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />
+                                      )}
+                                      <span>{n.title}</span>
+                                    </p>
+                                    {isUnread ? (
+                                      <span
+                                        className="flex-shrink-0 w-2 h-2 rounded-full bg-cyan-400 shadow-xs"
+                                        title="Unread"
+                                      />
+                                    ) : (
+                                      <span className="text-[10px] text-slate-500">Read</span>
+                                    )}
+                                  </div>
+
+                                  <p className="text-slate-300 mt-0.5 line-clamp-2">{n.message}</p>
+
+                                  {/* Detailed Metadata for Session Requests */}
+                                  {isSessionReq && (
+                                    <div className="mt-1.5 p-1.5 rounded-lg bg-slate-950/60 border border-slate-800 text-[11px] space-y-0.5 text-slate-400">
+                                      {meta.requesterName && (
+                                        <div>
+                                          <span className="text-slate-500">Requester: </span>
+                                          <span className="font-semibold text-white">
+                                            {meta.requesterName}
+                                          </span>
+                                        </div>
+                                      )}
+                                      {meta.skillName && (
+                                        <div>
+                                          <span className="text-slate-500">Skill: </span>
+                                          <span className="font-semibold text-brand-300">
+                                            {meta.skillName}
+                                          </span>
+                                        </div>
+                                      )}
+                                      {meta.dateTime && (
+                                        <div>
+                                          <span className="text-slate-500">Date/Time: </span>
+                                          <span className="text-slate-300">{meta.dateTime}</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+
+                                  <div className="flex items-center justify-between mt-1 text-[10px] text-slate-400">
+                                    <span>
+                                      {new Date(n.createdAt).toLocaleDateString([], {
+                                        month: 'short',
+                                        day: 'numeric',
+                                      })}{' '}
+                                      at{' '}
+                                      {new Date(n.createdAt).toLocaleTimeString([], {
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                      })}
+                                    </span>
+                                    <span className="text-cyan-400 font-medium hover:underline">
+                                      Open Session →
+                                    </span>
+                                  </div>
+                                </div>
                               </div>
-                            ))
+                            );
+                          })
                           )}
                         </div>
                       </motion.div>
@@ -317,7 +408,7 @@ const Navbar = () => {
                             onClick={() => {
                               setProfileDropdownOpen(false);
                               logout();
-                              navigate('/login');
+                              navigate('/');
                             }}
                             className="w-full flex items-center gap-2.5 px-4 py-2 text-xs text-rose-400 hover:bg-rose-950/40 active:scale-98 transition-all text-left"
                           >
@@ -336,13 +427,13 @@ const Navbar = () => {
                   to="/login"
                   className="px-4 py-2 rounded-xl text-xs font-semibold active:scale-95 transition-all text-slate-300 hover:text-white hover:bg-slate-800"
                 >
-                  Sign In
+                  Login
                 </Link>
                 <Link
                   to="/register"
                   className="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-brand-600 hover:bg-brand-500 active:scale-95 shadow-sm shadow-brand-600/25 transition-all"
                 >
-                  Join Campus Network
+                  Register
                 </Link>
               </div>
             )}
@@ -370,8 +461,7 @@ const Navbar = () => {
             transition={{ duration: 0.2, ease: 'easeOut' }}
             className="md:hidden border-t px-4 pt-2 pb-6 space-y-1 shadow-lg overflow-hidden border-slate-800 bg-slate-950 text-white"
           >
-            {navLinks.map((link) => {
-              if (link.authRequired && !isAuthenticated) return null;
+            {activeLinks.map((link) => {
               const Icon = link.icon;
               const active = isActive(link.path);
               return (
@@ -397,14 +487,14 @@ const Navbar = () => {
                   onClick={() => setMobileMenuOpen(false)}
                   className="w-full text-center py-2.5 rounded-xl border border-slate-800 text-sm font-semibold text-slate-300 hover:bg-slate-900 active:scale-98 transition-all"
                 >
-                  Sign In
+                  Login
                 </Link>
                 <Link
                   to="/register"
                   onClick={() => setMobileMenuOpen(false)}
                   className="w-full text-center py-2.5 rounded-xl bg-brand-600 text-white text-sm font-semibold shadow-sm active:scale-98 transition-all"
                 >
-                  Join Campus Network
+                  Register
                 </Link>
               </div>
             )}

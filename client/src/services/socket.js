@@ -1,9 +1,11 @@
 import { io } from 'socket.io-client';
 
 const getSocketURL = () => {
-  const envUrl = import.meta.env.VITE_SOCKET_URL;
-  if (envUrl && envUrl.trim()) {
-    let url = envUrl.trim();
+  const envUrl = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_URL;
+  if (envUrl && typeof envUrl === 'string' && envUrl.trim()) {
+    let url = envUrl.trim().replace(/^['"]+|['"]+$/g, '');
+    // Strip /api suffix if derived from VITE_API_URL
+    url = url.replace(/\/api\/?$/, '').replace(/\/+$/, '');
     if (url.startsWith('http://') || url.startsWith('https://')) {
       return url;
     }

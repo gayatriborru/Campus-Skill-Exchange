@@ -4,7 +4,10 @@ const { createRating, getStudentRatings } = require('../controllers/ratingContro
 const { validateRating } = require('../middleware/validateMiddleware');
 const { protect } = require('../middleware/authMiddleware');
 
-router.post('/', protect, validateRating, createRating);
+// Protect all rating routes: reviews and ratings require authentication
+router.use(protect);
+
+router.post('/', validateRating, createRating);
 router.get('/:studentId', getStudentRatings);
 
 module.exports = router;

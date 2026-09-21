@@ -58,6 +58,10 @@ const ProfilePage = () => {
   const [reportModalOpen, setReportModalOpen] = useState(false);
 
   const loadProfile = async () => {
+    if (!isAuthenticated) {
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       setError(null);
@@ -90,7 +94,7 @@ const ProfilePage = () => {
       }
     } catch (err) {
       console.error('Error loading profile:', err);
-      const msg = err.customMessage || 'Failed to load profile from database.';
+      const msg = err.customMessage || 'Failed to load profile. Please check your connection and try again.';
       setError(msg);
       toastError(msg);
     } finally {
@@ -99,8 +103,12 @@ const ProfilePage = () => {
   };
 
   useEffect(() => {
-    loadProfile();
-  }, [id, isOwnProfile]);
+    if (isAuthenticated) {
+      loadProfile();
+    } else {
+      setLoading(false);
+    }
+  }, [id, isOwnProfile, isAuthenticated]);
 
   const handleSaveProfile = async (e) => {
     e.preventDefault();

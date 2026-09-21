@@ -46,11 +46,25 @@ const notificationSchema = new mongoose.Schema(
       default: false,
       index: true,
     },
+    relatedSession: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Session',
+    },
+    metadata: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+    },
   },
   {
     timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
   }
 );
+
+notificationSchema.virtual('isRead').get(function () {
+  return this.read;
+});
 
 notificationSchema.index({ recipient: 1, createdAt: -1 });
 

@@ -15,13 +15,13 @@ const errorHandler = (err, req, res, next) => {
 
   if (err.code === 11000) {
     statusCode = 400;
-    const field = Object.keys(err.keyValue)[0];
+    const field = Object.keys(err.keyValue || {})[0] || 'field';
     message = `A record with this ${field} already exists.`;
   }
 
   if (err.name === 'ValidationError') {
     statusCode = 400;
-    message = Object.values(err.errors)
+    message = Object.values(err.errors || {})
       .map((val) => val.message)
       .join(', ');
   }
@@ -36,9 +36,25 @@ const errorHandler = (err, req, res, next) => {
     message = 'Authentication token expired, please log in again.';
   }
 
-  if (err.message && (err.message.includes('buffering timed out') || err.message.includes('ECONNREFUSED'))) {
+  // Handle Mongoose / MongoDB connection errors
+  const isDbConnectionError =
+    (err.message && (
+      err.message.includes('buffering timed out') ||
+      err.message.includes('ECONNREFUSED') ||
+      err.message.includes('server selection') ||
+      err.message.includes('topology was destroyed')
+    )) ||
+    err.name === 'MongooseServerSelectionError' ||
+    err.name === 'MongoServerSelectionError' ||
+    err.name === 'MongoNetworkError';
+
+  if (isDbConnectionError) {
     statusCode = 503;
-    message = 'Database is currently unreachable. Please ensure MONGODB_URI is configured in Render Environment Variables and IP 0.0.0.0/0 is allowed in MongoDB Atlas Network Access.';
+    message =
+      'Database is currently unreachable. Please ensure MONGODB_URI is configured in Render Environment Variables and IP 0.0.0.0/0 is allowed in MongoDB Atlas Network Access.';
+    console.error(`[Database Error] ${req.method} ${req.originalUrl}:`, err.message);
+  } else {
+    console.error(`[API Error] ${req.method} ${req.originalUrl} (${statusCode}):`, message);
   }
 
   res.status(statusCode).json({

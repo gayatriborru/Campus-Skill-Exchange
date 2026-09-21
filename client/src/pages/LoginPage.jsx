@@ -76,6 +76,18 @@ const LoginPage = () => {
       >
         <div className="bg-white py-8 px-6 sm:px-10 rounded-3xl border border-slate-200 shadow-xl shadow-slate-100 space-y-6">
           <AnimatePresence>
+            {location.state?.message && !errorMessage && (
+              <motion.div
+                initial={{ opacity: 0, height: 0, y: -8 }}
+                animate={{ opacity: 1, height: 'auto', y: 0 }}
+                exit={{ opacity: 0, height: 0, y: -8 }}
+                transition={{ duration: 0.2 }}
+                className="flex items-start gap-2.5 p-3 rounded-xl bg-cyan-50 border border-cyan-200 text-cyan-900 text-xs overflow-hidden"
+              >
+                <AlertCircle className="w-4 h-4 text-cyan-600 flex-shrink-0 mt-0.5" />
+                <span>{location.state.message}</span>
+              </motion.div>
+            )}
             {errorMessage && (
               <motion.div
                 initial={{ opacity: 0, height: 0, y: -8 }}

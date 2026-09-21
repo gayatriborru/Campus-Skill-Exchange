@@ -1,19 +1,29 @@
+const path = require('path');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const Skill = require('../models/Skill');
 const Badge = require('../models/Badge');
 
-dotenv.config({ path: '../.env' });
-if (!process.env.MONGODB_URI) {
-  dotenv.config({ path: '.env' });
-}
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+dotenv.config({ path: path.resolve(__dirname, '.env') });
+dotenv.config();
+
+const maskUri = (uri) => (uri ? uri.replace(/:\/\/([^:]+):([^@]+)@/, '://$1:****@') : 'none');
 
 const seedDatabase = async () => {
   try {
     const mongoUri =
-      process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/campus_skill_exchange';
+      process.env.MONGODB_URI?.trim() ||
+      process.env.MONGO_URI?.trim() ||
+      process.env.MONGODB_URL?.trim() ||
+      (process.env.NODE_ENV === 'production' ? '' : 'mongodb://127.0.0.1:27017/campus_skill_exchange');
 
-    console.log(`[Seeder] Connecting to MongoDB: ${mongoUri}`);
+    if (!mongoUri) {
+      console.error('[Seeder Error] MONGODB_URI is not set.');
+      process.exit(1);
+    }
+
+    console.log(`[Seeder] Connecting to MongoDB: ${maskUri(mongoUri)}`);
     await mongoose.connect(mongoUri);
     console.log('[Seeder] Connected successfully.');
 

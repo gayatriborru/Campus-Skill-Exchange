@@ -1,6 +1,9 @@
+const mongoose = require('mongoose');
 const Session = require('../models/Session');
 const Notification = require('../models/Notification');
 const User = require('../models/User');
+const Skill = require('../models/Skill');
+const { sendSessionRequestEmail } = require('../services/emailService');
 const { awardPoints, checkAndAwardBadges } = require('../services/gamificationService');
 
 // @desc    Send a session request
@@ -9,9 +12,24 @@ const createSession = async (req, res, next) => {
   try {
     const { teacher, skill, date, startTime, endTime, topic, notes, meetingLink } = req.body;
 
-    // Learner is the authenticated user making the request
+    // 1. Authenticate Requester (Learner is the authenticated user making the request)
     const learnerId = req.user._id;
 
+    if (!teacher) {
+      return res.status(400).json({
+        success: false,
+        message: 'Teacher / Mentor is required to request a session.',
+      });
+    }
+
+    if (!skill) {
+      return res.status(400).json({
+        success: false,
+        message: 'Skill is required to request a session.',
+      });
+    }
+
+    // Prevent requesting a session with yourself
     if (teacher.toString() === learnerId.toString()) {
       return res.status(400).json({
         success: false,
@@ -19,46 +37,154 @@ const createSession = async (req, res, next) => {
       });
     }
 
-    const session = await Session.create({
-      teacher,
+    // 2. Validate Receiver in MongoDB
+    if (!mongoose.Types.ObjectId.isValid(teacher)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid teacher ID provided.',
+      });
+    }
+
+    const receiverUser = await User.findById(teacher);
+    if (!receiverUser) {
+      return res.status(404).json({
+        success: false,
+        message: 'Receiver student not found in platform directory.',
+      });
+    }
+
+    // Validate Skill in MongoDB
+    if (!mongoose.Types.ObjectId.isValid(skill)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid skill ID provided.',
+      });
+    }
+
+    const skillDoc = await Skill.findById(skill);
+    if (!skillDoc) {
+      return res.status(404).json({
+        success: false,
+        message: 'Requested skill not found.',
+      });
+    }
+
+    // Prevent duplicate pending requests for the same mentor and skill
+    const existingPending = await Session.findOne({
+      teacher: receiverUser._id,
       learner: learnerId,
-      skill,
-      date: new Date(date),
-      startTime,
-      endTime,
-      topic: topic || 'Skill Exchange & Hands-On Practice',
-      notes: notes || '',
-      meetingLink: meetingLink || 'https://meet.google.com/new',
+      skill: skillDoc._id,
+      status: 'Pending',
+    });
+    if (existingPending) {
+      return res.status(400).json({
+        success: false,
+        message: 'A pending session request already exists for this mentor and skill.',
+      });
+    }
+
+    // Format date and time for notifications and email
+    const sessionDate = date ? new Date(date) : new Date();
+    const formattedDate = !isNaN(sessionDate.getTime())
+      ? sessionDate.toLocaleDateString('en-US', {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        })
+      : String(date);
+    const formattedDateTime = `${formattedDate} (${startTime || '16:00'} - ${endTime || '17:00'})`;
+
+    // 3. Create Session Request in MongoDB
+    const session = await Session.create({
+      teacher: receiverUser._id,
+      learner: learnerId,
+      skill: skillDoc._id,
+      date: !isNaN(sessionDate.getTime()) ? sessionDate : new Date(),
+      startTime: startTime || '16:00',
+      endTime: endTime || '17:00',
+      topic: topic?.trim() || `1:1 Mentorship in ${skillDoc.name}`,
+      notes: notes?.trim() || '',
+      meetingLink: meetingLink?.trim() || 'https://meet.google.com/new',
       status: 'Pending',
     });
 
-    // Notify teacher
-    const notification = await Notification.create({
-      recipient: teacher,
-      sender: learnerId,
-      type: 'SESSION_REQUEST',
-      title: 'New Session Request 📅',
-      message: `${req.user.name} sent you a learning request for a skill session.`,
-      link: '/sessions',
-    });
+    console.log(`[Session Controller] Session request created in MongoDB [ID: ${session._id}]: Requester=${req.user.name} -> Receiver=${receiverUser.name} (${receiverUser.email})`);
 
+    // 4. Create Notification in MongoDB for Receiver
+    let notification = null;
+    try {
+      notification = await Notification.create({
+        recipient: receiverUser._id,
+        sender: req.user._id,
+        type: 'SESSION_REQUEST',
+        title: 'New Session Request',
+        message: `${req.user.name} requested a session with you for ${skillDoc.name}.`,
+        link: '/sessions',
+        relatedSession: session._id,
+        read: false,
+        metadata: {
+          requesterName: req.user.name,
+          receiverName: receiverUser.name,
+          skillName: skillDoc.name,
+          dateTime: formattedDateTime,
+          notes: notes?.trim() || '',
+          sessionId: session._id,
+        },
+      });
+      console.log(`[Session Controller] In-app notification created in MongoDB [ID: ${notification._id}] for ${receiverUser.name}`);
+    } catch (notifErr) {
+      console.error('[Session Controller] In-app notification creation failed (session kept):', notifErr.message);
+    }
+
+    // 5. Send Email to Receiver's registered email via Nodemailer
+    let emailResult = { success: false };
+    try {
+      emailResult = await sendSessionRequestEmail({
+        receiverEmail: receiverUser.email,
+        receiverName: receiverUser.name,
+        requesterName: req.user.name,
+        skillName: skillDoc.name,
+        dateTime: formattedDateTime,
+        message: notes?.trim() || topic?.trim() || 'Skill exchange session requested via SkillVerse.',
+      });
+    } catch (emailErr) {
+      console.error('[Session Controller] Email delivery threw exception (session kept):', emailErr.message);
+      emailResult = { success: false, error: emailErr.message };
+    }
+
+    // Populate session for real-time and client response
     const populated = await Session.findById(session._id)
-      .populate('teacher', 'name profileImage department averageRating')
-      .populate('learner', 'name profileImage department')
+      .populate('teacher', 'name email profileImage department averageRating')
+      .populate('learner', 'name email profileImage department')
       .populate('skill', 'name category');
 
-    // Emit live real-time events
+    // 6. Emit Real-Time Socket.IO notification to Receiver
     const io = req.app.get('io');
     if (io) {
-      io.emitToUser?.(teacher, 'notification:receive', notification);
-      io.emitToUser?.(teacher, 'session:new', populated);
+      if (notification) {
+        io.emitToUser?.(receiverUser._id, 'notification:receive', notification);
+        io.emitToUser?.(receiverUser._id, 'new_session_request', {
+          session: populated,
+          notification,
+        });
+      }
+      io.emitToUser?.(receiverUser._id, 'session:new', populated);
       io.emit('stats:updated');
+      console.log(`[Session Controller] Emitted real-time socket events to user ${receiverUser._id}`);
     }
+
+    // 7. Return success response with proper status message
+    const responseMessage = emailResult.success
+      ? 'Session request sent successfully.'
+      : 'Session request created. Email notification could not be sent.';
 
     return res.status(201).json({
       success: true,
-      message: 'Session request sent successfully!',
+      message: responseMessage,
+      emailSent: emailResult.success,
       session: populated,
+      notificationId: notification?._id,
     });
   } catch (error) {
     next(error);

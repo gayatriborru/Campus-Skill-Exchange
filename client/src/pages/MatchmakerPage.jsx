@@ -31,7 +31,7 @@ const DEPARTMENTS = [
 ];
 
 const MatchmakerPage = () => {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   const [matches, setMatches] = useState([]);
@@ -46,6 +46,10 @@ const MatchmakerPage = () => {
   const [selectedSkill, setSelectedSkill] = useState(null);
 
   useEffect(() => {
+    if (!isAuthenticated) {
+      setLoading(false);
+      return;
+    }
     const fetchMatches = async () => {
       try {
         setLoading(true);
@@ -58,13 +62,13 @@ const MatchmakerPage = () => {
         setMatches(data || []);
       } catch (err) {
         console.error('Error fetching matches:', err);
-        setError(err.customMessage || 'Failed to retrieve matchmaker results from database.');
+        setError(err.customMessage || 'Failed to load matches. Please check your connection and try again.');
       } finally {
         setLoading(false);
       }
     };
     fetchMatches();
-  }, [department, minRating]);
+  }, [isAuthenticated, department, minRating]);
 
   const handleProposeSwap = (matchItem) => {
     setSelectedStudent(matchItem.student);

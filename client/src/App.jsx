@@ -17,6 +17,8 @@ import UsersPage from './pages/UsersPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import AboutPage from './pages/AboutPage';
+import ContactPage from './pages/ContactPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 const App = () => {
@@ -52,16 +54,72 @@ const App = () => {
             className="w-full"
           >
             <Routes location={location}>
-          {/* Public Discovery Routes */}
+          {/* Public Routes */}
           <Route path="/" element={<HomePage />} />
-          <Route path="/explore" element={<ExploreSkillsPage />} />
-          <Route path="/users" element={<UsersPage />} />
-          <Route path="/leaderboard" element={<LeaderboardPage />} />
-          <Route path="/profile/:id" element={<ProfilePage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/contact" element={<ContactPage />} />
 
           {/* Authentication */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+
+          {/* Protected Application Routes */}
+          <Route
+            path="/explore"
+            element={
+              <ProtectedRoute>
+                <ExploreSkillsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/explorer"
+            element={
+              <ProtectedRoute>
+                <ExploreSkillsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/users"
+            element={
+              <ProtectedRoute>
+                <UsersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/mentors"
+            element={
+              <ProtectedRoute>
+                <UsersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/leaderboard"
+            element={
+              <ProtectedRoute>
+                <LeaderboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile/:id"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <MatchmakerPage />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Authenticated Student Routes */}
           <Route

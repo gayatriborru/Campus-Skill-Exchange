@@ -146,7 +146,10 @@ async function verifyCleanUsersFlow() {
 
   // Step 6: Clean up test user so DB returns to clean 0 state
   console.log('\n[Check 6] Cleaning up verification user from MongoDB...');
-  const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/campus_skill_exchange';
+  const mongoUri =
+    process.env.MONGODB_URI?.trim() ||
+    process.env.MONGO_URI?.trim() ||
+    'mongodb://127.0.0.1:27017/campus_skill_exchange';
   await mongoose.connect(mongoUri);
   const User = require('../models/User');
   await User.findByIdAndDelete(registeredUser._id);

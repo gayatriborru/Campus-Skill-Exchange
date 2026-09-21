@@ -64,6 +64,10 @@ const UsersPage = () => {
 
   // Fetch real registered users from MongoDB Atlas via Express API
   const fetchUsers = useCallback(async () => {
+    if (!isAuthenticated) {
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       setError(null);
@@ -78,20 +82,25 @@ const UsersPage = () => {
       const userList = data.users || data.students || [];
       setUsers(userList);
     } catch (err) {
-      console.error('Error fetching registered users from MongoDB:', err);
+      console.error('Error fetching registered users:', err);
       const message =
-        err.customMessage || 'Failed to fetch registered users from database. Please check your connection.';
+        err.customMessage || 'Failed to load registered users. Please check your connection and try again.';
       setError(message);
       toastError(message);
       setUsers([]);
     } finally {
       setLoading(false);
     }
-  }, [search, department, minRating, sortBy, toastError]);
+  }, [isAuthenticated, search, department, minRating, sortBy, toastError]);
 
   useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
+    if (isAuthenticated) {
+      fetchUsers();
+    } else {
+      setUsers([]);
+      setLoading(false);
+    }
+  }, [isAuthenticated, fetchUsers]);
 
   // Real-time listener: when any new user registers in MongoDB, dynamically update the Users page
   useEffect(() => {
@@ -192,7 +201,7 @@ const UsersPage = () => {
           <div className="flex items-center gap-2.5">
             <AlertCircle className="w-5 h-5 text-rose-600 flex-shrink-0" />
             <div>
-              <p className="font-bold">Failed to load users from MongoDB database</p>
+              <p className="font-bold">Failed to load users</p>
               <p className="text-rose-700 mt-0.5">{error}</p>
             </div>
           </div>

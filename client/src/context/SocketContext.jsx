@@ -50,6 +50,15 @@ export const SocketProvider = ({ children }) => {
       window.dispatchEvent(new CustomEvent('campus:user:registered', { detail: newUser }));
     };
 
+    const onNewSessionRequest = (data) => {
+      if (data?.session) {
+        window.dispatchEvent(new CustomEvent('campus:session:updated', { detail: data.session }));
+      }
+      if (data?.notification) {
+        window.dispatchEvent(new CustomEvent('campus:notification:new', { detail: data.notification }));
+      }
+    };
+
     const onSessionNew = (session) => {
       window.dispatchEvent(new CustomEvent('campus:session:updated', { detail: session }));
     };
@@ -70,6 +79,7 @@ export const SocketProvider = ({ children }) => {
     socket.on('disconnect', onDisconnect);
     socket.on('users:online', onUsersOnline);
     socket.on('notification:receive', onNotificationReceive);
+    socket.on('new_session_request', onNewSessionRequest);
     socket.on('user:registered', onUserRegistered);
     socket.on('session:new', onSessionNew);
     socket.on('session:updated', onSessionUpdated);
@@ -85,6 +95,7 @@ export const SocketProvider = ({ children }) => {
       socket.off('disconnect', onDisconnect);
       socket.off('users:online', onUsersOnline);
       socket.off('notification:receive', onNotificationReceive);
+      socket.off('new_session_request', onNewSessionRequest);
       socket.off('user:registered', onUserRegistered);
       socket.off('session:new', onSessionNew);
       socket.off('session:updated', onSessionUpdated);

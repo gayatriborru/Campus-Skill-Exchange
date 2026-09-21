@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { adminService } from '../services/adminService';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import {
   Users,
@@ -34,6 +35,7 @@ import {
 const PIE_COLORS = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
 const AdminDashboardPage = () => {
+  const { isAuthenticated, isAdmin } = useAuth();
   const { toastSuccess, toastError } = useToast();
 
   const [stats, setStats] = useState(null);
@@ -47,6 +49,10 @@ const AdminDashboardPage = () => {
   const [studentSearch, setStudentSearch] = useState('');
 
   const loadAdminData = async () => {
+    if (!isAuthenticated || !isAdmin) {
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       setError(null);
@@ -62,7 +68,7 @@ const AdminDashboardPage = () => {
       setReports(reportsData || []);
     } catch (err) {
       console.error('Error loading admin portal data:', err);
-      const msg = err.customMessage || 'Failed to load administration data from database.';
+      const msg = err.customMessage || 'Failed to load administration data. Please check your connection and try again.';
       setError(msg);
       toastError(msg);
     } finally {
@@ -71,11 +77,16 @@ const AdminDashboardPage = () => {
   };
 
   useEffect(() => {
-    loadAdminData();
-  }, []);
+    if (isAuthenticated && isAdmin) {
+      loadAdminData();
+    } else {
+      setLoading(false);
+    }
+  }, [isAuthenticated, isAdmin]);
 
   // Real-time listener: refresh KPI metrics, charts, and student list whenever MongoDB updates
   useEffect(() => {
+    if (!isAuthenticated || !isAdmin) return;
     const handleStatsUpdated = () => {
       loadAdminData();
     };
@@ -85,7 +96,7 @@ const AdminDashboardPage = () => {
       window.removeEventListener('campus:stats:updated', handleStatsUpdated);
       window.removeEventListener('campus:user:registered', handleStatsUpdated);
     };
-  }, []);
+  }, [isAuthenticated, isAdmin]);
 
   const handleToggleSuspend = async (studentId, currentBlocked) => {
     if (!confirm(`Are you sure you want to ${currentBlocked ? 'reinstate' : 'suspend'} this student?`)) return;

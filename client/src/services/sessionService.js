@@ -3,7 +3,7 @@ import api from './api';
 export const sessionService = {
   createSession: async (sessionData) => {
     const res = await api.post('/sessions', sessionData);
-    return res.data.session;
+    return res.data;
   },
 
   getSessions: async (params = {}) => {

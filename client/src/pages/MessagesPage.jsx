@@ -23,7 +23,7 @@ import {
 
 const MessagesPage = () => {
   const [searchParams] = useSearchParams();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const { socket, isUserOnline, sendMessage, sendTyping } = useSocket();
   const { toastError } = useToast();
 
@@ -49,6 +49,10 @@ const MessagesPage = () => {
 
   // Load conversations list
   const loadConversations = async () => {
+    if (!isAuthenticated) {
+      setLoadingConvos(false);
+      return;
+    }
     try {
       setLoadingConvos(true);
       const list = await chatService.getConversations();
@@ -62,8 +66,13 @@ const MessagesPage = () => {
   };
 
   useEffect(() => {
-    loadConversations();
-  }, []);
+    if (isAuthenticated) {
+      loadConversations();
+    } else {
+      setConversations([]);
+      setLoadingConvos(false);
+    }
+  }, [isAuthenticated]);
 
   // Handle URL param ?recipient=...
   useEffect(() => {

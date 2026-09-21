@@ -103,7 +103,30 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="pt-8 border-t border-slate-800 text-slate-400 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+        {/* Footer Navigation Required Links */}
+        <div className="pt-6 pb-6 border-t border-slate-800 flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-xs font-semibold text-slate-400">
+          <Link to="/" className="hover:text-cyan-400 transition-colors">
+            Home
+          </Link>
+          <span className="text-slate-700">|</span>
+          <Link to="/about" className="hover:text-cyan-400 transition-colors">
+            About
+          </Link>
+          <span className="text-slate-700">|</span>
+          <Link to="/contact" className="hover:text-cyan-400 transition-colors">
+            Contact
+          </Link>
+          <span className="text-slate-700">|</span>
+          <Link to="/login" className="hover:text-cyan-400 transition-colors">
+            Login
+          </Link>
+          <span className="text-slate-700">|</span>
+          <Link to="/register" className="hover:text-cyan-400 transition-colors">
+            Register
+          </Link>
+        </div>
+
+        <div className="pt-6 border-t border-slate-800/80 text-slate-400 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
           <p>© {new Date().getFullYear()} SkillVerse. Powered by Student Peer Exchanges.</p>
           <div className="flex items-center gap-1 text-slate-400">
             <span>Crafted with</span>

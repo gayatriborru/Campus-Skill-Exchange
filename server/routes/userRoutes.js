@@ -8,12 +8,15 @@ const {
 } = require('../controllers/skillController');
 const { protect } = require('../middleware/authMiddleware');
 
-// Student skills endpoints
-router.get('/skills', protect, getMySkills);
-router.post('/skills', protect, addStudentSkill);
-router.delete('/skills/:id', protect, deleteStudentSkill);
+// Protect all user endpoints: unauthenticated users cannot access student profiles or directory
+router.use(protect);
 
-// Discover users
+// Student skills endpoints
+router.get('/skills', getMySkills);
+router.post('/skills', addStudentSkill);
+router.delete('/skills/:id', deleteStudentSkill);
+
+// Discover users & mentors
 router.get('/', getUsers);
 router.get('/:id', getUserById);
 
