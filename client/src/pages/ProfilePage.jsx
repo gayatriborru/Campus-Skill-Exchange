@@ -285,12 +285,25 @@ const ProfilePage = () => {
           {/* Quick Stats Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100 mb-6">
             <div className="text-center transition-transform hover:-translate-y-0.5 duration-200">
-              <span className="text-lg sm:text-xl font-bold text-slate-900 block">
-                ★ {profile.ratingsCount > 0 ? Number(profile.averageRating || 0).toFixed(1) : '0.0'}
-              </span>
-              <span className="text-[11px] text-slate-500 font-medium">
-                {profile.ratingsCount || 0} Peer Reviews
-              </span>
+              {profile.ratingsCount > 0 ? (
+                <>
+                  <span className="text-lg sm:text-xl font-bold text-slate-900 block">
+                    ★ {Number(profile.averageRating || 0).toFixed(1)}
+                  </span>
+                  <span className="text-[11px] text-slate-500 font-medium">
+                    {profile.ratingsCount} Peer Review{profile.ratingsCount > 1 ? 's' : ''}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="text-sm sm:text-base font-bold text-slate-700 block mt-0.5">
+                    No ratings yet
+                  </span>
+                  <span className="text-[11px] text-slate-400 font-medium">
+                    0 Peer Reviews
+                  </span>
+                </>
+              )}
             </div>
             <div className="text-center border-l border-slate-200/80 transition-transform hover:-translate-y-0.5 duration-200">
               <span className="text-lg sm:text-xl font-bold text-brand-600 block">

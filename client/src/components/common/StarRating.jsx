@@ -3,6 +3,7 @@ import { Star } from 'lucide-react';
 
 const StarRating = ({
   rating = 0,
+  ratingsCount,
   maxStars = 5,
   size = 'md',
   interactive = false,
@@ -20,12 +21,27 @@ const StarRating = ({
 
   const currentSize = sizeClasses[size] || sizeClasses.md;
 
+  // When not interactive, if there are no ratings, show 'No ratings yet'
+  const isUnrated =
+    !interactive &&
+    (ratingsCount === 0 || (ratingsCount === undefined && (!rating || Number(rating) === 0)));
+
+  if (isUnrated) {
+    return (
+      <span className="text-[11px] text-slate-400 font-medium whitespace-nowrap">
+        No ratings yet
+      </span>
+    );
+  }
+
+  const numericRating = Number(rating || 0);
+
   return (
-    <div className="inline-flex items-center gap-1.5">
-      <div className="flex items-center gap-0.5">
+    <div className="inline-flex items-center gap-1.5 max-w-full flex-nowrap flex-shrink-0">
+      <div className="flex items-center gap-0.5 flex-shrink-0">
         {[...Array(maxStars)].map((_, i) => {
           const starValue = i + 1;
-          const isFilled = starValue <= Math.round(rating);
+          const isFilled = starValue <= Math.round(numericRating);
 
           return (
             <button
@@ -35,12 +51,12 @@ const StarRating = ({
               onClick={() => interactive && onChange && onChange(starValue)}
               className={`${
                 interactive ? 'cursor-pointer hover:scale-110 transition-transform' : 'cursor-default'
-              } p-0 bg-transparent border-0 focus:outline-none`}
+              } p-0 bg-transparent border-0 focus:outline-none flex-shrink-0`}
             >
               <Star
                 className={`${currentSize} ${
                   isFilled
-                    ? 'text-amber-400 fill-amber-400 drop-shadow-[0_1px_3px_rgba(251,191,36,0.4)]'
+                    ? 'text-amber-400 fill-amber-400 drop-shadow-[0_1px_2px_rgba(251,191,36,0.3)]'
                     : 'text-slate-300 fill-transparent'
                 } transition-colors`}
               />
@@ -50,13 +66,13 @@ const StarRating = ({
       </div>
 
       {showValue && (
-        <span className="text-xs font-semibold text-slate-300 ml-0.5">
-          {Number(rating).toFixed(1)}
+        <span className="text-xs font-bold text-amber-500 ml-0.5 flex-shrink-0">
+          {numericRating.toFixed(1)}
         </span>
       )}
 
       {count !== undefined && (
-        <span className="text-xs text-slate-400">
+        <span className="text-[11px] text-slate-400 flex-shrink-0">
           ({count})
         </span>
       )}
@@ -65,3 +81,4 @@ const StarRating = ({
 };
 
 export default StarRating;
+

@@ -46,6 +46,16 @@ const ReviewSessionModal = ({ isOpen, onClose, session, onReviewSubmitted }) => 
         res.newBadges.forEach((b) => toastBadge(b.name, b.description));
       }
 
+      window.dispatchEvent(
+        new CustomEvent('campus:rating:submitted', {
+          detail: {
+            teacherId: session.teacher?._id || session.teacher,
+            teacherAverageRating: res.teacherAverageRating,
+            teacherRatingsCount: res.teacherRatingsCount,
+          },
+        })
+      );
+
       onReviewSubmitted && onReviewSubmitted(res);
       onClose();
     } catch (err) {

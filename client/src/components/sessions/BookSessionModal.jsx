@@ -123,7 +123,9 @@ const BookSessionModal = ({
               <p className="text-[11px] text-slate-500">{teacher.department} • {teacher.year}</p>
             </div>
             <div className="text-right text-[11px] font-semibold text-brand-700 bg-white px-2.5 py-1 rounded-lg border border-brand-200">
-              ★ {Number(teacher.averageRating || 5).toFixed(1)}
+              {teacher.ratingsCount > 0
+                ? `★ ${Number(teacher.averageRating).toFixed(1)}`
+                : 'No ratings yet'}
             </div>
           </div>
         )}

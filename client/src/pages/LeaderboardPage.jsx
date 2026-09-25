@@ -188,7 +188,7 @@ const LeaderboardPage = () => {
                         ? `${top3[1].skillPoints || 0} pts`
                         : metric === 'sessions'
                         ? `${top3[1].completedSessionsCount || 0} sessions`
-                        : `★ ${Number(top3[1].averageRating || 5).toFixed(1)}`}
+                        : (top3[1].ratingsCount > 0 ? `★ ${Number(top3[1].averageRating).toFixed(1)}` : 'No ratings yet')}
                     </span>
                   </div>
                 </motion.div>
@@ -226,7 +226,7 @@ const LeaderboardPage = () => {
                         ? `${top3[0].skillPoints || 0} pts`
                         : metric === 'sessions'
                         ? `${top3[0].completedSessionsCount || 0} sessions`
-                        : `★ ${Number(top3[0].averageRating || 5).toFixed(1)}`}
+                        : (top3[0].ratingsCount > 0 ? `★ ${Number(top3[0].averageRating).toFixed(1)}` : 'No ratings yet')}
                     </span>
                   </div>
                 </motion.div>
@@ -262,7 +262,7 @@ const LeaderboardPage = () => {
                         ? `${top3[2].skillPoints || 0} pts`
                         : metric === 'sessions'
                         ? `${top3[2].completedSessionsCount || 0} sessions`
-                        : `★ ${Number(top3[2].averageRating || 5).toFixed(1)}`}
+                        : (top3[2].ratingsCount > 0 ? `★ ${Number(top3[2].averageRating).toFixed(1)}` : 'No ratings yet')}
                     </span>
                   </div>
                 </motion.div>
@@ -322,7 +322,7 @@ const LeaderboardPage = () => {
                           ? `${st.skillPoints || 0} pts`
                           : metric === 'sessions'
                           ? `${st.completedSessionsCount || 0} sessions`
-                          : `★ ${Number(st.averageRating || 5).toFixed(1)}`}
+                          : (st.ratingsCount > 0 ? `★ ${Number(st.averageRating).toFixed(1)}` : 'No ratings yet')}
                       </span>
                       <span className="text-[10px] text-slate-400">
                         {st.completedSessionsCount || 0} sessions • {st.ratingsCount || 0} reviews

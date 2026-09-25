@@ -88,9 +88,13 @@ const HomePage = () => {
     };
     window.addEventListener('campus:stats:updated', handleStatsUpdated);
     window.addEventListener('campus:user:registered', handleStatsUpdated);
+    window.addEventListener('campus:rating:submitted', handleStatsUpdated);
+    window.addEventListener('campus:rating:updated', handleStatsUpdated);
     return () => {
       window.removeEventListener('campus:stats:updated', handleStatsUpdated);
       window.removeEventListener('campus:user:registered', handleStatsUpdated);
+      window.removeEventListener('campus:rating:submitted', handleStatsUpdated);
+      window.removeEventListener('campus:rating:updated', handleStatsUpdated);
     };
   }, [isAuthenticated]);
 
@@ -258,7 +262,7 @@ const HomePage = () => {
                   </div>
                   <div className="text-center p-3 rounded-xl hover:bg-slate-900/50 transition-colors">
                     <p className="text-2xl sm:text-3xl font-black text-purple-400">
-                      {loading ? '...' : platformStats?.averageRating ? `${platformStats.averageRating} ★` : '0.0 ★'}
+                      {loading ? '...' : platformStats?.averageRating ? `${platformStats.averageRating} ★` : 'No ratings yet'}
                     </p>
                     <p className="text-xs font-medium text-slate-400 mt-0.5">Average Mentor Rating</p>
                   </div>
@@ -428,7 +432,7 @@ const HomePage = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.3, delay: index * 0.08 }}
-                  className="bg-slate-900/80 backdrop-blur-sm rounded-2xl border border-slate-800 hover:border-slate-700 shadow-lg card-hover-lift transition-all p-5 flex flex-col justify-between group"
+                  className="bg-slate-900/80 backdrop-blur-sm rounded-2xl border border-slate-800 hover:border-slate-700 shadow-lg card-hover-lift transition-all p-5 flex flex-col justify-between group overflow-hidden"
                 >
                   <div>
                     <div className="flex items-start gap-3 mb-3">
@@ -443,9 +447,15 @@ const HomePage = () => {
                       <div className="min-w-0 flex-1">
                         <h3 className="text-sm font-bold text-white truncate">{mentor.name}</h3>
                         <p className="text-[11px] text-slate-400 truncate">{mentor.department}</p>
-                        <div className="mt-1 flex items-center gap-2">
-                          <StarRating rating={mentor.averageRating} size="xs" showValue />
-                          <span className="text-[10px] text-slate-400">
+                        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 min-w-0 max-w-full">
+                          {mentor.ratingsCount > 0 ? (
+                            <StarRating rating={mentor.averageRating} ratingsCount={mentor.ratingsCount} size="xs" showValue />
+                          ) : (
+                            <span className="text-[11px] text-slate-400 font-medium whitespace-nowrap">
+                              No ratings yet
+                            </span>
+                          )}
+                          <span className="text-[10px] text-slate-400 flex-shrink-0">
                             • {mentor.completedSessionsCount || 0} sessions
                           </span>
                         </div>

@@ -438,7 +438,7 @@ const AdminDashboardPage = () => {
                         </td>
 
                         <td className="px-6 py-3.5 font-bold text-slate-800">
-                          ★ {st.ratingsCount > 0 ? Number(st.averageRating || 0).toFixed(1) : '0.0'}
+                          {st.ratingsCount > 0 ? `★ ${Number(st.averageRating).toFixed(1)}` : 'No ratings yet'}
                         </td>
 
                         <td className="px-6 py-3.5 font-bold text-emerald-700">

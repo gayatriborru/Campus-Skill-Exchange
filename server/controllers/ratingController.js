@@ -58,15 +58,21 @@ const createRating = async (req, res, next) => {
     session.rated = true;
     await session.save();
 
-    // Recompute teacher's cumulative average rating
+    // Recompute teacher's cumulative average rating directly from real MongoDB ratings
     const teacherRatings = await Rating.find({ teacher: session.teacher });
-    const totalScore = teacherRatings.reduce((acc, r) => acc + r.overallRating, 0);
-    const newAverage = Number((totalScore / teacherRatings.length).toFixed(1));
+    const totalScore = teacherRatings.reduce((acc, r) => acc + Number(r.overallRating || 0), 0);
+    const newAverage = teacherRatings.length > 0
+      ? Number((totalScore / teacherRatings.length).toFixed(1))
+      : 0;
 
-    await User.findByIdAndUpdate(session.teacher, {
-      averageRating: newAverage,
-      ratingsCount: teacherRatings.length,
-    });
+    const updatedTeacher = await User.findByIdAndUpdate(
+      session.teacher,
+      {
+        averageRating: newAverage,
+        ratingsCount: teacherRatings.length,
+      },
+      { new: true }
+    );
 
     // Bonus points for teacher if rating is 5 stars (+25 points)
     if (overallRating >= 4.8) {
@@ -89,6 +95,12 @@ const createRating = async (req, res, next) => {
     const io = req.app.get('io');
     if (io) {
       io.emitToUser?.(session.teacher, 'notification:receive', notif);
+      io.emit('user:rating:updated', {
+        userId: session.teacher.toString(),
+        teacherId: session.teacher.toString(),
+        averageRating: newAverage,
+        ratingsCount: teacherRatings.length,
+      });
       io.emit('stats:updated');
     }
 
@@ -100,6 +112,9 @@ const createRating = async (req, res, next) => {
       success: true,
       message: 'Thank you! Your rating and feedback have been published.',
       rating: populated,
+      teacherAverageRating: newAverage,
+      teacherRatingsCount: teacherRatings.length,
+      teacher: updatedTeacher,
     });
   } catch (error) {
     next(error);

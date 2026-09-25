@@ -115,6 +115,34 @@ const ExploreSkillsPage = () => {
     fetchData();
   }, [isAuthenticated, activeTab, search, category, department, minRating, sortBy]);
 
+  // Real-time rating update listener to instantly update mentor cards
+  useEffect(() => {
+    const handleRatingUpdate = (e) => {
+      const detail = e.detail;
+      if (!detail?.teacherId && !detail?.userId) return;
+      const targetId = (detail.teacherId || detail.userId).toString();
+      setStudents((prev) =>
+        prev.map((u) => {
+          if (u._id?.toString() === targetId) {
+            return {
+              ...u,
+              averageRating: detail.teacherAverageRating ?? detail.averageRating ?? u.averageRating,
+              ratingsCount: detail.teacherRatingsCount ?? detail.ratingsCount ?? u.ratingsCount,
+            };
+          }
+          return u;
+        })
+      );
+    };
+
+    window.addEventListener('campus:rating:submitted', handleRatingUpdate);
+    window.addEventListener('campus:rating:updated', handleRatingUpdate);
+    return () => {
+      window.removeEventListener('campus:rating:submitted', handleRatingUpdate);
+      window.removeEventListener('campus:rating:updated', handleRatingUpdate);
+    };
+  }, []);
+
   const handleCategoryClick = (cat) => {
     setCategory(cat);
     if (cat === 'All') {
@@ -308,7 +336,7 @@ const ExploreSkillsPage = () => {
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.28, delay: index * 0.04 }}
-                className="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-lg card-hover-lift transition-all p-5 flex flex-col justify-between group"
+                className="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-lg card-hover-lift transition-all p-5 flex flex-col justify-between group overflow-hidden"
               >
                 <div>
                   {/* Top row: Avatar, Info, Rating */}
@@ -326,11 +354,19 @@ const ExploreSkillsPage = () => {
                       <p className="text-[11px] text-slate-500 truncate">
                         {st.department} • {st.year}
                       </p>
-                      <div className="mt-1 flex items-center gap-2">
-                        <StarRating rating={st.averageRating} size="xs" showValue />
-                        <span className="text-[10px] text-slate-400">
-                          ({st.ratingsCount || 0} reviews)
-                        </span>
+                      <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 min-w-0 max-w-full">
+                        {st.ratingsCount > 0 ? (
+                          <>
+                            <StarRating rating={st.averageRating} ratingsCount={st.ratingsCount} size="xs" showValue />
+                            <span className="text-[10px] text-slate-400 flex-shrink-0">
+                              ({st.ratingsCount} review{st.ratingsCount > 1 ? 's' : ''})
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-[11px] text-slate-400 font-medium whitespace-nowrap">
+                            No ratings yet
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>

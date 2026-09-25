@@ -193,7 +193,7 @@ const MatchmakerPage = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.35, delay: index * 0.05 }}
-                className={`bg-white rounded-2xl border p-6 shadow-xs hover:shadow-md transition-all flex flex-col justify-between card-hover-lift ${
+                className={`bg-white rounded-2xl border p-6 shadow-xs hover:shadow-md transition-all flex flex-col justify-between card-hover-lift overflow-hidden ${
                   isMutual
                     ? 'border-brand-300 ring-2 ring-brand-500/10'
                     : 'border-slate-200'
@@ -202,7 +202,7 @@ const MatchmakerPage = () => {
                 <div>
                   {/* Top: Match Badge & Student info */}
                   <div className="flex items-start justify-between gap-4 mb-4">
-                    <div className="flex items-start gap-3">
+                    <div className="flex items-start gap-3 min-w-0 flex-1">
                       <img
                         src={
                           item.student.profileImage ||
@@ -213,7 +213,7 @@ const MatchmakerPage = () => {
                         alt={item.student.name}
                         className="w-13 h-13 rounded-full object-cover border-2 border-brand-200 flex-shrink-0 transition-transform hover:scale-105 duration-200"
                       />
-                      <div>
+                      <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
                           <h3 className="text-base font-bold text-slate-900">
                             {item.student.name}
@@ -228,9 +228,15 @@ const MatchmakerPage = () => {
                         <p className="text-xs text-slate-500">
                           {item.student.department} • {item.student.year}
                         </p>
-                        <div className="mt-1 flex items-center gap-2">
-                          <StarRating rating={item.student.averageRating} size="xs" showValue />
-                          <span className="text-[10px] text-slate-400">
+                        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 min-w-0 max-w-full">
+                          {item.student.ratingsCount > 0 ? (
+                            <StarRating rating={item.student.averageRating} ratingsCount={item.student.ratingsCount} size="xs" showValue />
+                          ) : (
+                            <span className="text-[11px] text-slate-400 font-medium whitespace-nowrap">
+                              No ratings yet
+                            </span>
+                          )}
+                          <span className="text-[10px] text-slate-400 flex-shrink-0">
                             • Availability: {item.student.availability || 'Flexible'}
                           </span>
                         </div>

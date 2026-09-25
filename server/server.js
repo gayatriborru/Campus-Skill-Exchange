@@ -16,6 +16,7 @@ const fs = require('fs');
 const { connectDB, getDbDiagnostics } = require('./config/db');
 const { verifyDbConnection } = require('./middleware/dbCheckMiddleware');
 const { initializeSocket } = require('./socket/socketHandler');
+const { reconcileAllUserRatings } = require('./services/ratingSyncService');
 
 // Route imports
 const authRoutes = require('./routes/authRoutes');
@@ -162,6 +163,7 @@ const startServer = async () => {
 
   try {
     await connectDB();
+    await reconcileAllUserRatings();
   } catch (err) {
     console.error('[Server Startup] Initial database connection attempt caught:', err.message);
   }

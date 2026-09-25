@@ -43,7 +43,8 @@ const register = async (req, res, next) => {
       profileImage: user.profileImage,
       role: user.role,
       skillPoints: user.skillPoints,
-      averageRating: user.averageRating,
+      averageRating: user.averageRating || 0,
+      ratingsCount: user.ratingsCount || 0,
       createdAt: user.createdAt,
     };
 
@@ -110,7 +111,8 @@ const login = async (req, res, next) => {
         profileImage: user.profileImage,
         role: user.role,
         skillPoints: user.skillPoints,
-        averageRating: user.averageRating,
+        averageRating: user.averageRating || 0,
+        ratingsCount: user.ratingsCount || 0,
       },
     });
   } catch (error) {
@@ -205,7 +207,8 @@ const updateProfile = async (req, res, next) => {
         availability: user.availability,
         role: user.role,
         skillPoints: user.skillPoints,
-        averageRating: user.averageRating,
+        averageRating: user.averageRating || 0,
+        ratingsCount: user.ratingsCount || 0,
       },
     });
   } catch (error) {

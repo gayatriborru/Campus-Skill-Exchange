@@ -113,6 +113,34 @@ const UsersPage = () => {
     };
   }, [fetchUsers]);
 
+  // Real-time listener: when any rating is submitted or updated, update user cards immediately
+  useEffect(() => {
+    const handleRatingUpdated = (e) => {
+      const detail = e.detail;
+      if (detail?.teacherId) {
+        setUsers((prev) =>
+          prev.map((u) =>
+            u._id === detail.teacherId
+              ? {
+                  ...u,
+                  averageRating: detail.teacherAverageRating ?? u.averageRating,
+                  ratingsCount: detail.teacherRatingsCount ?? ((u.ratingsCount || 0) + 1),
+                }
+              : u
+          )
+        );
+      } else {
+        fetchUsers();
+      }
+    };
+    window.addEventListener('campus:rating:submitted', handleRatingUpdated);
+    window.addEventListener('campus:rating:updated', handleRatingUpdated);
+    return () => {
+      window.removeEventListener('campus:rating:submitted', handleRatingUpdated);
+      window.removeEventListener('campus:rating:updated', handleRatingUpdated);
+    };
+  }, [fetchUsers]);
+
   const handleBookSession = (targetUser, skill = null) => {
     if (!isAuthenticated) {
       navigate('/login');
@@ -332,11 +360,11 @@ const UsersPage = () => {
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.28, delay: index * 0.04 }}
-                className="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-lg card-hover-lift transition-all p-5 flex flex-col justify-between group"
+                className="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-lg card-hover-lift transition-all p-5 flex flex-col justify-between group overflow-hidden"
               >
-                <div>
+                <div className="min-w-0 max-w-full">
                   {/* Top user identity */}
-                  <div className="flex items-start gap-3 mb-3">
+                  <div className="flex items-start gap-3 mb-3 min-w-0 max-w-full">
                     <img
                       src={
                         u.profileImage ||
@@ -345,13 +373,13 @@ const UsersPage = () => {
                         )}`
                       }
                       alt={u.name}
-                      className="w-13 h-13 rounded-full object-cover border-2 border-brand-100 flex-shrink-0 group-hover:scale-105 transition-transform"
+                      className="w-12 h-12 rounded-full object-cover border-2 border-brand-100 flex-shrink-0 group-hover:scale-105 transition-transform"
                     />
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 min-w-0">
                         <h3 className="text-sm font-bold text-slate-900 truncate">{u.name}</h3>
                         {u.role === 'admin' && (
-                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">
+                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 flex-shrink-0">
                             Admin
                           </span>
                         )}
@@ -359,9 +387,19 @@ const UsersPage = () => {
                       <p className="text-[11px] text-slate-500 truncate">
                         {u.department} • {u.year}
                       </p>
-                      <div className="mt-1 flex items-center gap-2">
-                        <StarRating rating={u.averageRating || 5} size="xs" showValue />
-                        <span className="text-[10px] text-slate-400">
+
+                      {/* Rating & Sessions Row */}
+                      <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 min-w-0 max-w-full">
+                        {u.ratingsCount > 0 ? (
+                          <div className="flex items-center gap-1 flex-shrink-0">
+                            <StarRating rating={u.averageRating} size="xs" showValue ratingsCount={u.ratingsCount} />
+                          </div>
+                        ) : (
+                          <span className="text-[11px] text-slate-400 font-medium whitespace-nowrap flex-shrink-0">
+                            No ratings yet
+                          </span>
+                        )}
+                        <span className="text-[10px] text-slate-400 flex-shrink-0">
                           • {u.completedSessionsCount || 0} sessions
                         </span>
                       </div>
@@ -510,11 +548,18 @@ const UsersPage = () => {
                       {u.department} • {u.year}
                     </td>
 
-                    <td className="px-6 py-3.5 font-bold text-slate-800">
-                      ★ {Number(u.averageRating || 5.0).toFixed(1)}
-                      <span className="text-[10px] text-slate-400 font-normal ml-1">
-                        ({u.ratingsCount || 0})
-                      </span>
+                    <td className="px-6 py-3.5 font-bold text-slate-800 whitespace-nowrap">
+                      {u.ratingsCount > 0 ? (
+                        <div className="flex items-center gap-1">
+                          <span className="text-amber-500">★</span>
+                          <span>{Number(u.averageRating).toFixed(1)}</span>
+                          <span className="text-[10px] text-slate-400 font-normal ml-0.5">
+                            ({u.ratingsCount})
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-slate-400 font-normal">No ratings yet</span>
+                      )}
                     </td>
 
                     <td className="px-6 py-3.5 font-bold text-emerald-700">

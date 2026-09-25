@@ -75,6 +75,11 @@ export const SocketProvider = ({ children }) => {
       window.dispatchEvent(new CustomEvent('campus:skills:updated', { detail: data }));
     };
 
+    const onRatingUpdated = (data) => {
+      window.dispatchEvent(new CustomEvent('campus:rating:updated', { detail: data }));
+      window.dispatchEvent(new CustomEvent('campus:stats:updated'));
+    };
+
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
     socket.on('users:online', onUsersOnline);
@@ -85,6 +90,7 @@ export const SocketProvider = ({ children }) => {
     socket.on('session:updated', onSessionUpdated);
     socket.on('stats:updated', onStatsUpdated);
     socket.on('user:skillsUpdated', onSkillsUpdated);
+    socket.on('user:rating:updated', onRatingUpdated);
 
     if (socket.connected) {
       onConnect();
@@ -101,6 +107,7 @@ export const SocketProvider = ({ children }) => {
       socket.off('session:updated', onSessionUpdated);
       socket.off('stats:updated', onStatsUpdated);
       socket.off('user:skillsUpdated', onSkillsUpdated);
+      socket.off('user:rating:updated', onRatingUpdated);
     };
   }, [isAuthenticated, user?._id, toastBadge, toastInfo]);
 

@@ -41,6 +41,7 @@ const getUsers = async (req, res, next) => {
 
     if (minRating) {
       query.averageRating = { $gte: Number(minRating) };
+      query.ratingsCount = { $gt: 0 };
     }
 
     // Filter by specific skill
@@ -53,8 +54,8 @@ const getUsers = async (req, res, next) => {
       query._id = { $in: studentIdsWithSkill };
     }
 
-    let sortOption = { averageRating: -1, completedSessionsCount: -1 };
-    if (sortBy === 'rating') sortOption = { averageRating: -1 };
+    let sortOption = { ratingsCount: -1, averageRating: -1, completedSessionsCount: -1 };
+    if (sortBy === 'rating') sortOption = { averageRating: -1, ratingsCount: -1 };
     if (sortBy === 'sessions') sortOption = { completedSessionsCount: -1 };
     if (sortBy === 'points') sortOption = { skillPoints: -1 };
     if (sortBy === 'newest') sortOption = { createdAt: -1 };
@@ -98,6 +99,24 @@ const getUserById = async (req, res, next) => {
 
     const skills = await StudentSkill.find({ student: student._id }).populate('skill');
     const badges = await UserBadge.find({ user: student._id }).populate('badge');
+    const allReviews = await Rating.find({ teacher: student._id });
+    const actualRatingsCount = allReviews.length;
+    const actualAverage =
+      actualRatingsCount > 0
+        ? Number(
+            (
+              allReviews.reduce((sum, r) => sum + Number(r.overallRating || 0), 0) /
+              actualRatingsCount
+            ).toFixed(1)
+          )
+        : 0;
+
+    if (student.averageRating !== actualAverage || student.ratingsCount !== actualRatingsCount) {
+      student.averageRating = actualAverage;
+      student.ratingsCount = actualRatingsCount;
+      await student.save();
+    }
+
     const reviews = await Rating.find({ teacher: student._id })
       .populate('learner', 'name profileImage department')
       .sort({ createdAt: -1 })
