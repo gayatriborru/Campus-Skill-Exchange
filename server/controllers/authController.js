@@ -2,12 +2,14 @@ const User = require('../models/User');
 const StudentSkill = require('../models/StudentSkill');
 const UserBadge = require('../models/UserBadge');
 const generateToken = require('../utils/generateToken');
+const { getUserAvatar } = require('../utils/avatarUtils');
+const mongoose = require('mongoose');
 
 // @desc    Register new student
 // @route   POST /api/auth/register
 const register = async (req, res, next) => {
   try {
-    const { name, email, password, department, year, bio, profileImage } = req.body;
+    const { name, email, password, department, year, bio, gender, profileImage } = req.body;
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -17,16 +19,21 @@ const register = async (req, res, next) => {
       });
     }
 
+    const newUserId = new mongoose.Types.ObjectId();
+    const avatarUrl =
+      profileImage ||
+      getUserAvatar({ _id: newUserId, gender });
+
     const user = await User.create({
+      _id: newUserId,
       name,
       email,
       password,
       department,
       year,
+      gender: gender || '',
       bio: bio || 'Passionate student eager to share skills and learn from campus peers.',
-      profileImage:
-        profileImage ||
-        `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name)}`,
+      profileImage: avatarUrl,
       role: 'student',
       skillPoints: 50, // Welcome bonus points!
     });
@@ -39,6 +46,7 @@ const register = async (req, res, next) => {
       email: user.email,
       department: user.department,
       year: user.year,
+      gender: user.gender || '',
       bio: user.bio,
       profileImage: user.profileImage,
       role: user.role,
@@ -107,6 +115,7 @@ const login = async (req, res, next) => {
         email: user.email,
         department: user.department,
         year: user.year,
+        gender: user.gender || '',
         bio: user.bio,
         profileImage: user.profileImage,
         role: user.role,
@@ -136,6 +145,7 @@ const getProfile = async (req, res, next) => {
       success: true,
       user: {
         ...user.toObject(),
+        gender: user.gender || '',
         skillsTeach: skills.filter((s) => s.type === 'teach'),
         skillsLearn: skills.filter((s) => s.type === 'learn'),
         badges: badges.map((ub) => ({
@@ -158,13 +168,20 @@ const updateProfile = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    const { name, bio, department, year, availability, profileImage, currentPassword, newPassword } = req.body;
+    const { name, bio, department, year, availability, gender, profileImage, currentPassword, newPassword } = req.body;
 
     if (name) user.name = name.trim();
     if (bio !== undefined) user.bio = bio.trim();
     if (department) user.department = department;
     if (year) user.year = year;
     if (availability) user.availability = availability;
+    if (gender !== undefined) {
+      user.gender = gender;
+      // Ensure avatar updates to reflect chosen gender if using DiceBear
+      if (!profileImage && (!user.profileImage || user.profileImage.includes('dicebear.com'))) {
+        user.profileImage = getUserAvatar(user);
+      }
+    }
     if (profileImage) user.profileImage = profileImage;
 
     // Optional password change
@@ -202,6 +219,7 @@ const updateProfile = async (req, res, next) => {
         email: user.email,
         department: user.department,
         year: user.year,
+        gender: user.gender || '',
         bio: user.bio,
         profileImage: user.profileImage,
         availability: user.availability,

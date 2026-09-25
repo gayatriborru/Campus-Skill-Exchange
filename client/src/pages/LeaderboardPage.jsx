@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext';
 import StarRating from '../components/common/StarRating';
 import BadgePill from '../components/common/BadgePill';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import { getUserAvatar } from '../utils/avatarUtils';
 import {
   Trophy,
   Award,
@@ -171,12 +172,7 @@ const LeaderboardPage = () => {
                     2
                   </div>
                   <img
-                    src={
-                      top3[1].profileImage ||
-                      `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(
-                        top3[1].name
-                      )}`
-                    }
+                    src={getUserAvatar(top3[1])}
                     alt=""
                     className="w-16 h-16 rounded-full object-cover mx-auto mb-3 border-2 border-slate-200 hover:scale-105 transition-transform"
                   />
@@ -207,12 +203,7 @@ const LeaderboardPage = () => {
                     👑
                   </div>
                   <img
-                    src={
-                      top3[0].profileImage ||
-                      `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(
-                        top3[0].name
-                      )}`
-                    }
+                    src={getUserAvatar(top3[0])}
                     alt=""
                     className="w-20 h-20 rounded-full object-cover mx-auto mb-3 border-4 border-amber-200 ring-2 ring-amber-400/50 hover:scale-105 transition-transform"
                   />
@@ -245,12 +236,7 @@ const LeaderboardPage = () => {
                     3
                   </div>
                   <img
-                    src={
-                      top3[2].profileImage ||
-                      `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(
-                        top3[2].name
-                      )}`
-                    }
+                    src={getUserAvatar(top3[2])}
                     alt=""
                     className="w-16 h-16 rounded-full object-cover mx-auto mb-3 border-2 border-amber-700/20 hover:scale-105 transition-transform"
                   />
@@ -299,12 +285,7 @@ const LeaderboardPage = () => {
                         {idx + 4}
                       </span>
                       <img
-                        src={
-                          st.profileImage ||
-                          `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(
-                            st.name
-                          )}`
-                        }
+                        src={getUserAvatar(st)}
                         alt=""
                         className="w-10 h-10 rounded-full object-cover border border-slate-200"
                       />

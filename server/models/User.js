@@ -56,6 +56,12 @@ const userSchema = new mongoose.Schema(
       default: 'Passionate student eager to share skills and learn from campus peers.',
       maxlength: [500, 'Bio cannot exceed 500 characters'],
     },
+    gender: {
+      type: String,
+      enum: ['Male', 'Female', 'Other', 'male', 'female', 'other', ''],
+      default: '',
+      trim: true,
+    },
     profileImage: {
       type: String,
       default: '',

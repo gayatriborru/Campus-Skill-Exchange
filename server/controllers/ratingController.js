@@ -105,8 +105,8 @@ const createRating = async (req, res, next) => {
     }
 
     const populated = await Rating.findById(rating._id)
-      .populate('teacher', 'name profileImage')
-      .populate('learner', 'name profileImage department');
+      .populate('teacher', 'name profileImage gender')
+      .populate('learner', 'name profileImage department gender');
 
     return res.status(201).json({
       success: true,
@@ -126,7 +126,7 @@ const createRating = async (req, res, next) => {
 const getStudentRatings = async (req, res, next) => {
   try {
     const ratings = await Rating.find({ teacher: req.params.studentId })
-      .populate('learner', 'name profileImage department year')
+      .populate('learner', 'name profileImage department year gender')
       .populate({
         path: 'session',
         populate: { path: 'skill', select: 'name' },

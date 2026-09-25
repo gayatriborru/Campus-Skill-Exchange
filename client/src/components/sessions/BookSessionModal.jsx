@@ -4,6 +4,7 @@ import { sessionService } from '../../services/sessionService';
 import { skillService } from '../../services/skillService';
 import { useToast } from '../../context/ToastContext';
 import { Calendar, Clock, Video, BookOpen, User } from 'lucide-react';
+import { getUserAvatar } from '../../utils/avatarUtils';
 
 const BookSessionModal = ({
   isOpen,
@@ -111,10 +112,7 @@ const BookSessionModal = ({
         {teacher && (
           <div className="flex items-center gap-3 p-3 bg-brand-50/60 border border-brand-100 rounded-xl">
             <img
-              src={
-                teacher.profileImage ||
-                `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(teacher.name)}`
-              }
+              src={getUserAvatar(teacher)}
               alt={teacher.name}
               className="w-10 h-10 rounded-full object-cover border border-brand-200"
             />

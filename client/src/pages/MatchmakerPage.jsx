@@ -7,6 +7,7 @@ import StarRating from '../components/common/StarRating';
 import SkillTag from '../components/common/SkillTag';
 import BookSessionModal from '../components/sessions/BookSessionModal';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import { getUserAvatar } from '../utils/avatarUtils';
 import {
   Repeat,
   Sparkles,
@@ -204,12 +205,7 @@ const MatchmakerPage = () => {
                   <div className="flex items-start justify-between gap-4 mb-4">
                     <div className="flex items-start gap-3 min-w-0 flex-1">
                       <img
-                        src={
-                          item.student.profileImage ||
-                          `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(
-                            item.student.name
-                          )}`
-                        }
+                        src={getUserAvatar(item.student)}
                         alt={item.student.name}
                         className="w-13 h-13 rounded-full object-cover border-2 border-brand-200 flex-shrink-0 transition-transform hover:scale-105 duration-200"
                       />

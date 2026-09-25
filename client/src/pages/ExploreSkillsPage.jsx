@@ -9,6 +9,7 @@ import BadgePill from '../components/common/BadgePill';
 import SkillTag from '../components/common/SkillTag';
 import BookSessionModal from '../components/sessions/BookSessionModal';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import { getUserAvatar } from '../utils/avatarUtils';
 import {
   Search,
   Filter,
@@ -342,10 +343,7 @@ const ExploreSkillsPage = () => {
                   {/* Top row: Avatar, Info, Rating */}
                   <div className="flex items-start gap-3 mb-3">
                     <img
-                      src={
-                        st.profileImage ||
-                        `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(st.name)}`
-                      }
+                      src={getUserAvatar(st)}
                       alt={st.name}
                       className="w-12 h-12 rounded-full object-cover border border-brand-200 flex-shrink-0 group-hover:scale-105 transition-transform"
                     />

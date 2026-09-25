@@ -4,6 +4,7 @@ import { adminService } from '../services/adminService';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import { getUserAvatar } from '../utils/avatarUtils';
 import {
   Users,
   CalendarCheck,
@@ -417,12 +418,7 @@ const AdminDashboardPage = () => {
                         <td className="px-6 py-3.5">
                           <div className="flex items-center gap-3">
                             <img
-                              src={
-                                st.profileImage ||
-                                `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(
-                                  st.name
-                                )}`
-                              }
+                              src={getUserAvatar(st)}
                               alt=""
                               className="w-9 h-9 rounded-full object-cover border border-slate-200"
                             />

@@ -6,6 +6,7 @@ import { useToast } from '../context/ToastContext';
 import ReviewSessionModal from '../components/sessions/ReviewSessionModal';
 import BookSessionModal from '../components/sessions/BookSessionModal';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import { getUserAvatar } from '../utils/avatarUtils';
 import {
   Calendar,
   Clock,
@@ -267,12 +268,7 @@ const SessionsPage = () => {
                 {/* Left Col: Peer info & Topic */}
                 <div className="flex items-start gap-4 flex-1">
                   <img
-                    src={
-                      peer?.profileImage ||
-                      `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(
-                        peer?.name || 'Peer'
-                      )}`
-                    }
+                    src={getUserAvatar(peer)}
                     alt={peer?.name}
                     className="w-13 h-13 rounded-2xl object-cover border border-slate-200 flex-shrink-0 transition-transform hover:scale-105 duration-200"
                   />

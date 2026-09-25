@@ -34,7 +34,7 @@ const calculateSkillMatch = async (currentUserId, options = {}) => {
   }
 
   const otherStudents = await User.find(query).select(
-    'name email department year bio profileImage averageRating ratingsCount completedSessionsCount availability skillPoints'
+    'name email department year bio profileImage averageRating ratingsCount completedSessionsCount availability skillPoints gender'
   );
 
   // 3. For each student, analyze skill overlap & calculate affinity

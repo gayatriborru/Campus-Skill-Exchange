@@ -118,7 +118,7 @@ const getUserById = async (req, res, next) => {
     }
 
     const reviews = await Rating.find({ teacher: student._id })
-      .populate('learner', 'name profileImage department')
+      .populate('learner', 'name profileImage department gender')
       .sort({ createdAt: -1 })
       .limit(10);
 

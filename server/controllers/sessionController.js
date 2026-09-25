@@ -155,8 +155,8 @@ const createSession = async (req, res, next) => {
 
     // Populate session for real-time and client response
     const populated = await Session.findById(session._id)
-      .populate('teacher', 'name email profileImage department averageRating ratingsCount')
-      .populate('learner', 'name email profileImage department ratingsCount')
+      .populate('teacher', 'name email profileImage department averageRating ratingsCount gender')
+      .populate('learner', 'name email profileImage department ratingsCount gender')
       .populate('skill', 'name category');
 
     // 6. Emit Real-Time Socket.IO notification to Receiver
@@ -220,8 +220,8 @@ const getSessions = async (req, res, next) => {
     }
 
     const sessions = await Session.find(query)
-      .populate('teacher', 'name email profileImage department averageRating ratingsCount')
-      .populate('learner', 'name email profileImage department averageRating ratingsCount')
+      .populate('teacher', 'name email profileImage department averageRating ratingsCount gender')
+      .populate('learner', 'name email profileImage department averageRating ratingsCount gender')
       .populate('skill', 'name category')
       .sort({ date: -1, createdAt: -1 });
 
@@ -344,8 +344,8 @@ const updateSession = async (req, res, next) => {
     await session.save();
 
     const updated = await Session.findById(session._id)
-      .populate('teacher', 'name profileImage department averageRating ratingsCount')
-      .populate('learner', 'name profileImage department averageRating ratingsCount')
+      .populate('teacher', 'name profileImage department averageRating ratingsCount gender')
+      .populate('learner', 'name profileImage department averageRating ratingsCount gender')
       .populate('skill', 'name category');
 
     // Real-time broadcast to both participants and update global stats

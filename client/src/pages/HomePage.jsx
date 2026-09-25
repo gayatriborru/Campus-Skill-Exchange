@@ -10,6 +10,7 @@ import StarRating from '../components/common/StarRating';
 import SkillTag from '../components/common/SkillTag';
 import BookSessionModal from '../components/sessions/BookSessionModal';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import { getUserAvatar } from '../utils/avatarUtils';
 import {
   Sparkles,
   ArrowRight,
@@ -437,10 +438,7 @@ const HomePage = () => {
                   <div>
                     <div className="flex items-start gap-3 mb-3">
                       <img
-                        src={
-                          mentor.profileImage ||
-                          `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(mentor.name)}`
-                        }
+                        src={getUserAvatar(mentor)}
                         alt={mentor.name}
                         className="w-12 h-12 rounded-full object-cover border-2 border-slate-700 group-hover:scale-105 transition-transform"
                       />

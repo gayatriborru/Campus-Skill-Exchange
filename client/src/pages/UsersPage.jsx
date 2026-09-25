@@ -9,6 +9,7 @@ import BadgePill from '../components/common/BadgePill';
 import SkillTag from '../components/common/SkillTag';
 import BookSessionModal from '../components/sessions/BookSessionModal';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import { getUserAvatar } from '../utils/avatarUtils';
 import {
   Users,
   Search,
@@ -366,12 +367,7 @@ const UsersPage = () => {
                   {/* Top user identity */}
                   <div className="flex items-start gap-3 mb-3 min-w-0 max-w-full">
                     <img
-                      src={
-                        u.profileImage ||
-                        `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(
-                          u.name || 'Student'
-                        )}`
-                      }
+                      src={getUserAvatar(u)}
                       alt={u.name}
                       className="w-12 h-12 rounded-full object-cover border-2 border-brand-100 flex-shrink-0 group-hover:scale-105 transition-transform"
                     />
@@ -528,12 +524,7 @@ const UsersPage = () => {
                     <td className="px-6 py-3.5">
                       <div className="flex items-center gap-3">
                         <img
-                          src={
-                            u.profileImage ||
-                            `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(
-                              u.name || 'Student'
-                            )}`
-                          }
+                          src={getUserAvatar(u)}
                           alt=""
                           className="w-9 h-9 rounded-full object-cover border border-slate-200"
                         />

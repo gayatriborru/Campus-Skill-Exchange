@@ -9,6 +9,7 @@ import { useToast } from '../context/ToastContext';
 import BookSessionModal from '../components/sessions/BookSessionModal';
 import ReportUserModal from '../components/common/ReportUserModal';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import { getUserAvatar } from '../utils/avatarUtils';
 import {
   Send,
   Calendar,
@@ -241,12 +242,7 @@ const MessagesPage = () => {
                   >
                     <div className="relative flex-shrink-0">
                       <img
-                        src={
-                          convo.user.profileImage ||
-                          `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(
-                            convo.user.name
-                          )}`
-                        }
+                        src={getUserAvatar(convo.user)}
                         alt={convo.user.name}
                         className="w-11 h-11 rounded-full object-cover border border-slate-200"
                       />
@@ -300,12 +296,7 @@ const MessagesPage = () => {
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="relative">
                     <img
-                      src={
-                        activeRecipient.profileImage ||
-                        `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(
-                          activeRecipient.name
-                        )}`
-                      }
+                      src={getUserAvatar(activeRecipient)}
                       alt={activeRecipient.name}
                       className="w-10 h-10 rounded-full object-cover border border-slate-200"
                     />
@@ -377,12 +368,7 @@ const MessagesPage = () => {
                       >
                         {!isMe && (
                           <img
-                            src={
-                              activeRecipient.profileImage ||
-                              `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(
-                                activeRecipient.name
-                              )}`
-                            }
+                            src={getUserAvatar(activeRecipient)}
                             alt=""
                             className="w-7 h-7 rounded-full object-cover mb-1"
                           />

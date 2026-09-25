@@ -12,8 +12,8 @@ const getConversations = async (req, res, next) => {
       $or: [{ sender: userId }, { recipient: userId }],
     })
       .sort({ createdAt: -1 })
-      .populate('sender', 'name profileImage department')
-      .populate('recipient', 'name profileImage department');
+      .populate('sender', 'name profileImage department gender')
+      .populate('recipient', 'name profileImage department gender');
 
     const conversationMap = new Map();
 
@@ -67,8 +67,8 @@ const getMessagesWithUser = async (req, res, next) => {
       ],
     })
       .sort({ createdAt: 1 })
-      .populate('sender', 'name profileImage')
-      .populate('recipient', 'name profileImage');
+      .populate('sender', 'name profileImage gender')
+      .populate('recipient', 'name profileImage gender');
 
     // Mark received messages as read
     await Message.updateMany(
@@ -108,8 +108,8 @@ const sendMessage = async (req, res, next) => {
     });
 
     const populated = await Message.findById(message._id)
-      .populate('sender', 'name profileImage')
-      .populate('recipient', 'name profileImage');
+      .populate('sender', 'name profileImage gender')
+      .populate('recipient', 'name profileImage gender');
 
     return res.status(201).json({
       success: true,

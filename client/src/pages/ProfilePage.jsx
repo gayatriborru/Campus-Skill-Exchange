@@ -11,6 +11,7 @@ import AddSkillModal from '../components/skills/AddSkillModal';
 import BookSessionModal from '../components/sessions/BookSessionModal';
 import ReportUserModal from '../components/common/ReportUserModal';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import { getUserAvatar } from '../utils/avatarUtils';
 import {
   User,
   Plus,
@@ -48,6 +49,7 @@ const ProfilePage = () => {
   const [editBio, setEditBio] = useState('');
   const [editDept, setEditDept] = useState('');
   const [editYear, setEditYear] = useState('');
+  const [editGender, setEditGender] = useState('Male');
   const [editAvailability, setEditAvailability] = useState('Flexible');
   const [savingProfile, setSavingProfile] = useState(false);
 
@@ -83,6 +85,7 @@ const ProfilePage = () => {
         setEditBio(freshUser?.bio || authUser?.bio || '');
         setEditDept(freshUser?.department || authUser?.department || '');
         setEditYear(freshUser?.year || authUser?.year || '');
+        setEditGender(freshUser?.gender || authUser?.gender || 'Male');
         setEditAvailability(freshUser?.availability || authUser?.availability || 'Flexible');
       } else {
         const student = await userService.getUserById(id);
@@ -118,6 +121,7 @@ const ProfilePage = () => {
         bio: editBio.trim(),
         department: editDept,
         year: editYear,
+        gender: editGender,
         availability: editAvailability,
       });
       toastSuccess('Profile details saved!');
@@ -213,12 +217,7 @@ const ProfilePage = () => {
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.4, delay: 0.1 }}
-                src={
-                  profile.profileImage ||
-                  `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(
-                    profile.name
-                  )}`
-                }
+                src={getUserAvatar(profile)}
                 alt={profile.name}
                 className="w-28 h-28 sm:w-36 sm:h-36 rounded-3xl object-cover border-4 border-white shadow-xl bg-white transition-transform hover:scale-105 duration-300"
               />
@@ -351,7 +350,7 @@ const ProfilePage = () => {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
                       Department
@@ -385,6 +384,21 @@ const ProfilePage = () => {
                       <option value="3rd Year">3rd Year</option>
                       <option value="4th Year">4th Year</option>
                       <option value="Postgraduate">Postgraduate</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                      Gender
+                    </label>
+                    <select
+                      value={editGender}
+                      onChange={(e) => setEditGender(e.target.value)}
+                      className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 bg-white"
+                    >
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Other">Other</option>
                     </select>
                   </div>
 
@@ -609,12 +623,7 @@ const ProfilePage = () => {
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <img
-                      src={
-                        rev.learner?.profileImage ||
-                        `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(
-                          rev.learner?.name || 'Student'
-                        )}`
-                      }
+                      src={getUserAvatar(rev.learner)}
                       alt=""
                       className="w-7 h-7 rounded-full object-cover"
                     />

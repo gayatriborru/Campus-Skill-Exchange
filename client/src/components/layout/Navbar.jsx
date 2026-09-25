@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
 import { useToast } from '../../context/ToastContext';
 import { notificationService } from '../../services/notificationService';
+import { getUserAvatar } from '../../utils/avatarUtils';
 import {
   Sparkles,
   Compass,
@@ -361,12 +362,7 @@ const Navbar = () => {
                     className="flex items-center gap-2 p-1 rounded-full hover:ring-2 hover:ring-brand-500/20 active:scale-95 transition-all focus:outline-none"
                   >
                     <img
-                      src={
-                        user?.profileImage ||
-                        `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(
-                          user?.name || 'Student'
-                        )}`
-                      }
+                      src={getUserAvatar(user)}
                       alt={user?.name}
                       className="w-9 h-9 rounded-full object-cover border-2 border-brand-200 transition-transform hover:scale-105"
                     />
@@ -513,12 +509,7 @@ const Navbar = () => {
                   <div className="flex items-center justify-between px-2 py-1 text-xs text-slate-400">
                     <div className="flex items-center gap-2 truncate">
                       <img
-                        src={
-                          user?.profileImage ||
-                          `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(
-                            user?.name || 'Student'
-                          )}`
-                        }
+                        src={getUserAvatar(user)}
                         alt={user?.name}
                         className="w-6 h-6 rounded-full object-cover border border-slate-700"
                       />
