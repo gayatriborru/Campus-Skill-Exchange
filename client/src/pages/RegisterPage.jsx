@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
@@ -21,7 +21,7 @@ const DEPARTMENTS = [
 const YEARS = ['1st Year', '2nd Year', '3rd Year', '4th Year', 'Postgraduate'];
 
 const RegisterPage = () => {
-  const { register } = useAuth();
+  const { register, isAuthenticated } = useAuth();
   const { toastSuccess, toastError } = useToast();
   const navigate = useNavigate();
 
@@ -32,6 +32,13 @@ const RegisterPage = () => {
   const [year, setYear] = useState(YEARS[1]);
   const [bio, setBio] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -52,7 +59,7 @@ const RegisterPage = () => {
       });
 
       toastSuccess('Registration successful! +50 Starting Skill Points awarded.', 'Welcome!');
-      navigate('/users');
+      navigate('/dashboard');
     } catch (err) {
       toastError(err.customMessage || 'Registration failed. Please check your credentials.');
     } finally {

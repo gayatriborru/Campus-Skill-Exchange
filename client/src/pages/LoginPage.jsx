@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
@@ -6,7 +6,7 @@ import { useToast } from '../context/ToastContext';
 import { Sparkles, Lock, Mail, AlertCircle } from 'lucide-react';
 
 const LoginPage = () => {
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const { toastSuccess, toastError } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
@@ -16,7 +16,16 @@ const LoginPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  const destination = location.state?.from?.pathname || '/';
+  const defaultDestination = '/dashboard';
+  const fromPath = location.state?.from?.pathname;
+  const destination = fromPath && fromPath !== '/' && fromPath !== '/login' ? fromPath : defaultDestination;
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

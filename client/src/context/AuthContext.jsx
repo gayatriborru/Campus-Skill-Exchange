@@ -4,7 +4,7 @@ import { authService } from '../services/authService';
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => authService.getStoredUser());
   const [token, setToken] = useState(() => localStorage.getItem('token') || null);
   const [loading, setLoading] = useState(true);
 
@@ -15,10 +15,17 @@ export const AuthProvider = ({ children }) => {
       if (storedToken) {
         try {
           const profile = await authService.getProfile();
-          setUser(profile);
+          if (profile) {
+            setUser(profile);
+          }
         } catch (err) {
-          console.warn('[AuthContext] Token expired or invalid, logging out.', err);
-          logout();
+          // Only log out if the backend returned 401 or 403 (unauthorized/forbidden)
+          if (err.response?.status === 401 || err.response?.status === 403) {
+            console.warn('[AuthContext] Token expired or invalid, logging out.', err);
+            logout();
+          } else {
+            console.warn('[AuthContext] Error verifying token with backend, keeping existing session:', err);
+          }
         }
       } else {
         setUser(null);

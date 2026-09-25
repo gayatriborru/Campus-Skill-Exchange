@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
 import {
   Sparkles,
   ArrowLeft,
@@ -23,6 +24,7 @@ import {
 } from 'lucide-react';
 
 const AboutPage = () => {
+  const { isAuthenticated } = useAuth();
   const steps = [
     {
       number: '01',
@@ -154,11 +156,11 @@ const AboutPage = () => {
           transition={{ duration: 0.3 }}
         >
           <Link
-            to="/"
+            to={isAuthenticated ? '/dashboard' : '/'}
             className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white text-xs font-semibold backdrop-blur-sm transition-all duration-150 active:scale-95 group"
           >
             <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-            <span>Back to Home</span>
+            <span>{isAuthenticated ? 'Back to Dashboard' : 'Back to Home'}</span>
           </Link>
         </motion.div>
 
@@ -387,10 +389,10 @@ const AboutPage = () => {
             </div>
             <div className="lg:col-span-4 flex flex-col sm:flex-row lg:flex-col gap-3 justify-center items-stretch">
               <Link
-                to="/register"
+                to={isAuthenticated ? '/dashboard' : '/register'}
                 className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-brand-600 hover:bg-brand-500 text-white font-semibold text-sm shadow-md shadow-brand-600/30 transition-all active:scale-95 text-center"
               >
-                <span>Join Campus Network</span>
+                <span>{isAuthenticated ? 'Go to Dashboard' : 'Join Campus Network'}</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link

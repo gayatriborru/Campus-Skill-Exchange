@@ -43,6 +43,15 @@ const contactSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    emailSent: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    emailDeliveryError: {
+      type: String,
+      default: '',
+    },
   },
   {
     timestamps: true,

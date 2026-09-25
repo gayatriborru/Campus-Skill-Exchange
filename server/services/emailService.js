@@ -22,6 +22,13 @@ const getTransporter = async () => {
     });
   }
 
+  if (process.env.NODE_ENV === 'production') {
+    console.error(
+      '[Email Service] SMTP configuration missing in production (SMTP_HOST, SMTP_USER, SMTP_PASS required).'
+    );
+    return null;
+  }
+
   // Local development / testing fallback: Create an ephemeral Ethereal test transporter
   // so real email payloads are verified and testable without requiring private production credentials.
   try {
@@ -165,6 +172,131 @@ Thank you.`;
   }
 };
 
+/**
+ * Sends a contact form inquiry email to the platform administrator/owner.
+ *
+ * @param {Object} params
+ * @param {string} params.adminEmail - Administrator recipient email from environment variable (CONTACT_RECEIVER_EMAIL)
+ * @param {string} params.senderName - Visitor's name
+ * @param {string} params.senderEmail - Visitor's email address
+ * @param {string} params.subject - Message subject
+ * @param {string} params.message - Full message body
+ * @returns {Promise<{ success: boolean, messageId?: string, error?: string, previewUrl?: string }>}
+ */
+const sendContactFormEmail = async ({
+  adminEmail,
+  senderName,
+  senderEmail,
+  subject,
+  message,
+}) => {
+  try {
+    if (!adminEmail) {
+      const err = new Error(
+        'Administrator recipient email is not configured (CONTACT_RECEIVER_EMAIL environment variable is missing).'
+      );
+      console.error('[Email Service] Error:', err.message);
+      return { success: false, error: err.message };
+    }
+
+    const transporter = await getTransporter();
+    if (!transporter) {
+      const err = new Error(
+        'SMTP mail transporter is not configured. Please set SMTP_HOST, SMTP_USER, and SMTP_PASS environment variables.'
+      );
+      console.error('[Email Service] Error:', err.message);
+      return { success: false, error: err.message };
+    }
+
+    const fromAddress =
+      process.env.SMTP_FROM ||
+      (process.env.SMTP_USER
+        ? `"Campus Skill Exchange" <${process.env.SMTP_USER}>`
+        : '"Campus Skill Exchange" <no-reply@campus-skill-exchange.edu>');
+
+    const emailSubject = `[Contact Form] ${subject}`;
+
+    const textBody = `New Contact Message Received
+
+From: ${senderName} (${senderEmail})
+Subject: ${subject}
+Date: ${new Date().toLocaleString('en-US', { timeZoneName: 'short' })}
+
+Message:
+--------------------------------------------------
+${message}
+--------------------------------------------------
+
+Reply directly to this email to contact ${senderName} (${senderEmail}).`;
+
+    const htmlBody = `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 620px; margin: 0 auto; background: #0b1120; color: #f8fafc; border-radius: 16px; overflow: hidden; border: 1px solid #1e293b;">
+        <div style="background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #6366f1 100%); padding: 24px; text-align: center;">
+          <h1 style="margin: 0; color: #ffffff; font-size: 20px; font-weight: 800; letter-spacing: -0.5px;">Campus Skill Exchange</h1>
+          <p style="margin: 4px 0 0; color: #e0f2fe; font-size: 13px;">New Contact Us Inquiry</p>
+        </div>
+        <div style="padding: 28px 24px;">
+          <div style="background: #1e293b; border-radius: 12px; padding: 18px; margin-bottom: 20px; border: 1px solid #334155;">
+            <p style="margin: 0 0 8px; font-size: 13px; color: #94a3b8;"><strong style="color: #f1f5f9;">From:</strong> <span style="color: #67e8f9; font-weight: 600;">${senderName}</span> (&lt;<a href="mailto:${senderEmail}" style="color: #38bdf8; text-decoration: none;">${senderEmail}</a>&gt;)</p>
+            <p style="margin: 0 0 8px; font-size: 13px; color: #94a3b8;"><strong style="color: #f1f5f9;">Subject:</strong> <span style="color: #ffffff; font-weight: 600;">${subject}</span></p>
+            <p style="margin: 0; font-size: 12px; color: #64748b;"><strong style="color: #94a3b8;">Time:</strong> ${new Date().toLocaleString('en-US', { timeZoneName: 'short' })}</p>
+          </div>
+
+          <div style="margin-bottom: 24px;">
+            <p style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; font-weight: 700; margin: 0 0 8px;">Message Content:</p>
+            <div style="background: #0f172a; border-radius: 12px; padding: 16px; border-left: 4px solid #38bdf8; font-size: 14px; line-height: 1.6; color: #e2e8f0; white-space: pre-wrap;">${message.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+          </div>
+
+          <div style="text-align: center; margin: 24px 0 12px;">
+            <a href="mailto:${senderEmail}?subject=Re:%20${encodeURIComponent(subject)}" style="background: #0284c7; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 10px; font-size: 13px; font-weight: 600; display: inline-block;">
+              Reply to ${senderName}
+            </a>
+          </div>
+        </div>
+        <div style="background: #070a13; padding: 16px 24px; text-align: center; border-top: 1px solid #1e293b; font-size: 11px; color: #64748b;">
+          This message was submitted via the Campus Skill Exchange public contact form and delivered to ${adminEmail}.
+        </div>
+      </div>
+    `;
+
+    console.log(`[Email Service] Attempting to send contact form email to admin (${adminEmail}) from ${senderName} (${senderEmail})...`);
+
+    const info = await transporter.sendMail({
+      from: fromAddress,
+      to: adminEmail,
+      replyTo: senderEmail,
+      subject: emailSubject,
+      text: textBody,
+      html: htmlBody,
+    });
+
+    console.log(`[Email Service] Contact form email sent successfully to ${adminEmail}! Message ID: ${info.messageId}`);
+
+    let previewUrl = null;
+    try {
+      previewUrl = nodemailer.getTestMessageUrl(info);
+      if (previewUrl) {
+        console.log(`[Email Service] Test Message Preview URL: ${previewUrl}`);
+      }
+    } catch {
+      // Ignored for production SMTP
+    }
+
+    return {
+      success: true,
+      messageId: info.messageId,
+      previewUrl,
+    };
+  } catch (error) {
+    console.error(`[Email Service] Failed to send contact email to ${adminEmail}:`, error.message);
+    return {
+      success: false,
+      error: error.message,
+    };
+  }
+};
+
 module.exports = {
   sendSessionRequestEmail,
+  sendContactFormEmail,
 };

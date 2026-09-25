@@ -25,6 +25,7 @@ import {
   Home,
   Info,
   Mail,
+  LayoutDashboard,
 } from 'lucide-react';
 
 const Navbar = () => {
@@ -99,6 +100,14 @@ const Navbar = () => {
     }
   };
 
+  const handleLogout = () => {
+    setProfileDropdownOpen(false);
+    setMobileMenuOpen(false);
+    logout();
+    navigate('/');
+    toastSuccess('Signed out successfully.');
+  };
+
   const publicNavLinks = [
     { name: 'Home', path: '/', icon: Home },
     { name: 'About', path: '/about', icon: Info },
@@ -106,26 +115,23 @@ const Navbar = () => {
   ];
 
   const authNavLinks = [
-    { name: 'Home', path: '/', icon: Home },
-    { name: 'Explore', path: '/explore', icon: Compass },
-    { name: 'Users', path: '/users', icon: Users },
-    { name: 'Matchmaker', path: '/matchmaker', icon: Repeat },
+    { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+    { name: 'Skill Explorer', path: '/explore', icon: Compass },
+    { name: 'Find Mentors', path: '/users', icon: Users },
     { name: 'Sessions', path: '/sessions', icon: Calendar },
     { name: 'Messages', path: '/messages', icon: MessageSquare },
     { name: 'Leaderboard', path: '/leaderboard', icon: Trophy },
-    { name: 'About', path: '/about', icon: Info },
-    { name: 'Contact', path: '/contact', icon: Mail },
   ];
 
   if (isAdmin) {
-    authNavLinks.splice(7, 0, { name: 'Admin', path: '/admin', icon: Shield });
+    authNavLinks.push({ name: 'Admin', path: '/admin', icon: Shield });
   }
 
   const activeLinks = isAuthenticated ? authNavLinks : publicNavLinks;
 
   const isActive = (path) => {
     if (path === '/' && location.pathname === '/') return true;
-    if (path !== '/' && location.pathname.startsWith(path)) return true;
+    if (path !== '/' && (location.pathname === path || (path !== '/' && location.pathname.startsWith(path + '/')))) return true;
     return false;
   };
 
@@ -140,7 +146,7 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-16">
           {/* Brand Logo */}
           <div className="flex items-center gap-8">
-            <Link to="/" className="flex items-center gap-2.5 group">
+            <Link to={isAuthenticated ? '/dashboard' : '/'} className="flex items-center gap-2.5 group">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 via-brand-500 to-indigo-400 flex items-center justify-center text-white shadow-md shadow-brand-500/25 group-hover:scale-105 group-hover:shadow-brand-500/40 transition-all">
                 <Sparkles className="w-5 h-5" />
               </div>
@@ -405,12 +411,8 @@ const Navbar = () => {
 
                         <div className="border-t border-slate-800 pt-1">
                           <button
-                            onClick={() => {
-                              setProfileDropdownOpen(false);
-                              logout();
-                              navigate('/');
-                            }}
-                            className="w-full flex items-center gap-2.5 px-4 py-2 text-xs text-rose-400 hover:bg-rose-950/40 active:scale-98 transition-all text-left"
+                            onClick={handleLogout}
+                            className="w-full flex items-center gap-2.5 px-4 py-2 text-xs text-rose-400 hover:bg-rose-950/40 active:scale-98 transition-all text-left cursor-pointer"
                           >
                             <LogOut className="w-4 h-4 text-rose-400" />
                             Sign Out
@@ -420,6 +422,17 @@ const Navbar = () => {
                     )}
                   </AnimatePresence>
                 </div>
+
+                {/* Direct Desktop Logout Button */}
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-800 hover:border-rose-900/60 bg-slate-900/60 hover:bg-rose-950/40 text-slate-300 hover:text-rose-400 text-xs font-semibold active:scale-95 transition-all cursor-pointer"
+                  title="Sign Out"
+                >
+                  <LogOut className="w-3.5 h-3.5 text-rose-400" />
+                  <span>Logout</span>
+                </button>
               </>
             ) : (
               <div className="flex items-center gap-2">
@@ -480,7 +493,50 @@ const Navbar = () => {
                 </Link>
               );
             })}
-            {!isAuthenticated && (
+
+            {isAuthenticated ? (
+              <>
+                <Link
+                  to="/profile"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                    isActive('/profile')
+                      ? 'bg-slate-800 text-white font-semibold'
+                      : 'text-slate-300 hover:bg-slate-800'
+                  }`}
+                >
+                  <User className={`w-4 h-4 ${isActive('/profile') ? 'text-cyan-400' : 'text-slate-400'}`} />
+                  Profile
+                </Link>
+
+                <div className="pt-3 border-t border-slate-800 flex flex-col gap-2">
+                  <div className="flex items-center justify-between px-2 py-1 text-xs text-slate-400">
+                    <div className="flex items-center gap-2 truncate">
+                      <img
+                        src={
+                          user?.profileImage ||
+                          `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(
+                            user?.name || 'Student'
+                          )}`
+                        }
+                        alt={user?.name}
+                        className="w-6 h-6 rounded-full object-cover border border-slate-700"
+                      />
+                      <span className="font-semibold text-white truncate">{user?.name}</span>
+                    </div>
+                    <span className="text-emerald-400 font-bold">{user?.skillPoints || 0} pts</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-rose-900/50 bg-rose-950/30 text-rose-400 hover:bg-rose-950/60 text-sm font-semibold active:scale-98 transition-all cursor-pointer"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              </>
+            ) : (
               <div className="pt-3 border-t border-slate-800 flex flex-col gap-2">
                 <Link
                   to="/login"

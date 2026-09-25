@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { contactService } from '../services/contactService';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
 import {
   Sparkles,
   ArrowLeft,
@@ -19,6 +20,7 @@ import {
 } from 'lucide-react';
 
 const ContactPage = () => {
+  const { isAuthenticated } = useAuth();
   const { toastSuccess, toastError } = useToast();
 
   const [formData, setFormData] = useState({
@@ -135,11 +137,11 @@ const ContactPage = () => {
           transition={{ duration: 0.3 }}
         >
           <Link
-            to="/"
+            to={isAuthenticated ? '/dashboard' : '/'}
             className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white text-xs font-semibold backdrop-blur-sm transition-all duration-150 active:scale-95 group"
           >
             <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-            <span>Back to Home</span>
+            <span>{isAuthenticated ? 'Back to Dashboard' : 'Back to Home'}</span>
           </Link>
         </motion.div>
 
